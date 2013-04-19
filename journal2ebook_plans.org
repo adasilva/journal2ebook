@@ -2,3 +2,4 @@
 * TODO Remove temp files at end
 * TODO Pop-up window to ask for file
 * TODO Pop-up window to ask for height, or auto-detect based on OS
+* TODO pass enter keypress to k2pdfopt so it runs automatically
