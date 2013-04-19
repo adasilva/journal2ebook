@@ -118,9 +118,7 @@ if __name__ == '__main__':
     #pdb.set_trace()
     
     root=Tk()
-    myapp=MyApp(root,'~/Downloads/13670050308667769.pdf')#filename)
+    myapp=MyApp(root,'~/Downloads/13670050308667769.pdf')
     root.mainloop()
     
     
-    #canvas - container for drawing
-    #frame - most frequently used container
