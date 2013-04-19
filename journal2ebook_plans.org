@@ -1,0 +1,4 @@
+* TODO Allow page changing
+* TODO Remove temp files at end
+* TODO Pop-up window to ask for file
+* TODO Pop-up window to ask for height, or auto-detect based on OS
