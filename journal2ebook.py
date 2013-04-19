@@ -1,6 +1,7 @@
 import ImageTk
 import PIL.Image
 from Tkinter import *
+from tkFileDialog import askopenfilename
 import os
 
 import pdb
@@ -113,12 +114,61 @@ class MyApp:
         self.canvas1.coords(self.top,ct,0,ct,self.height)
         cb=self.width/2.+self.scale4.get()*self.width/2.
         self.canvas1.coords(self.bottom,cb,0,cb,self.height)
+'''
+
+class FileChooser():
+    #gui for choosing file to convert
+    def __init__(self,parent):
+        self.parent=parent
+        ### File browser
+        self.frame1=Frame(parent)
+        self.filename = tkFileDialog.askopenfilename(filetypes=[("allfiles","*"),("pythonfiles","*.py")])
+        ### Quit and save buttons
+        self.frame2=Frame(parent)
+        self.frame2.pack()
+        self.bReady=Button(self.frame2, text='OK')
+        self.bReady.pack(side=LEFT)
+        self.bReady.focus_force()  #Force focus to be on button1 on start
+        self.bReady.bind('<Button-1>',self.bReadyClick)
+        self.bReady.bind('<Return>',self.bReadyClick)
+        
+        self.bQuit=Button(self.frame2)
+        self.bQuit.configure(text='Cancel')
+        self.bQuit.pack(side=RIGHT)
+        self.bQuit.bind('<Button-1>',self.bQuitClick)
+        self.bQuit.bind('<Return>',self.bQuitClick)
+
+    def bReadyClick(self,event):
+        #Filename chooser.
+        self.parent.destroy()
+
+    def bQuitClick(self,event):
+        #Quit without choosing a file.
+        self.filename = None  #returns no files!
+        self.parent.destroy()
+'''
+
+def fileChooser():
+    root=Tk()
+    filename = askopenfilename(initialdir='~/', filetypes=[("pdf","*.pdf"),])
+    return filename
+
 
 if __name__ == '__main__':
-    #pdb.set_trace()
     
+    filename=fileChooser()
+
     root=Tk()
-    myapp=MyApp(root,'~/Downloads/13670050308667769.pdf')
+
+    # GUI to select pdf file
+    #window1=FileChooser(root)
+    #root.mainloop()
+    #filename=window1.filename
+
+    #if filename==None:
+    #    pass
+    #else:
+
+    # Pass filename to myapp & run application
+    myapp=MyApp(root,filename)#,'~/Downloads/MoireBands.pdf')#filename)
     root.mainloop()
-    
-    
