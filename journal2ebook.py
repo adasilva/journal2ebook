@@ -1,71 +1,83 @@
 import ImageTk
+import PIL.Image
 from Tkinter import *
 import os
 
 import pdb
 
 class MyApp:
-    '''Converts a pdf to an epub using the k2pdfopt application
-
-Allows you to set margins in a GUI using an image of the first page of your pdf. The resulting epub file is output to the folder you are running this app from.
-
-Requires the following python modules:
-ImageTk - to show an image of your pdf in the application
-Tkinter - to make the GUI
-os - to interface with the operating system
-
-Also depends on:
-imagemagick - to convert pdf to png 
-k2pdfopt - to convert pdf to epub
-'''
+    '''
+    Converts a pdf to an epub using the k2pdfopt application
+    
+    Allows you to set margins in a GUI using an image of the first page of
+    your pdf. The resulting epub file is output to the folder you are
+    running this app from.
+    
+    Requires the following python modules:
+    ImageTk - to show an image of your pdf in the application
+    Tkinter - to make the GUI
+    os - to interface with the operating system
+    
+    Also depends on:
+    imagemagick - to convert pdf to png 
+    k2pdfopt - to convert pdf to epub
+    '''
     def __init__(self,parent,filename):
+        self.page = 2        # page of interest, should be set by gui later
+        self.height=600      # intended height, also could be set by gui       
         self.myParent=parent
+        
+        ### Loading and preparing the image. This is done first
+        ### because the size of the canvas depends on the image size.
+        # First, convert pdf to png
+        self.filename=filename.rstrip('pdf')
+        self.filename=self.filename.rstrip('.')
+        os.system('convert %s.pdf temp.png' % self.filename)
+        
+        # Resize the image
+        self.img = PIL.Image.open('temp-%s.png' % self.page)
+        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])        
+        self.width = int(self.height * self.imgaspect)
+        self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
 
         ### Top frame is the left and right margin scale bars
         self.frame1=Frame(parent)
         self.frame1.pack()
 
-        self.scale2=Scale(self.frame1,from_=0,to=1,orient=HORIZONTAL,resolution=0.05,sliderlength=15,label='left margin')
+        self.scale2=Scale(self.frame1,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,label='left margin')
         self.scale2.pack(side=LEFT)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
 
-        self.scale4=Scale(self.frame1,from_=0,to=1,orient=HORIZONTAL,resolution=0.05,sliderlength=15,label='right margin')
+        self.scale4=Scale(self.frame1,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,label='right margin')
         self.scale4.pack(side=LEFT)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
 
         ### Below these are the top and bottom margins
-        self.frame2=Frame(parent)
-        self.frame2.pack()
+        #self.frame2=Frame(parent)
+        #self.frame2.pack()
  
-        self.scale1=Scale(self.frame2,from_=0,to=1,orient=VERTICAL,resolution=0.05,sliderlength=15,label='top margin')
+        self.scale1=Scale(self.frame1,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,label='top margin')
         self.scale1.pack(side=LEFT)
         self.scale1.bind('<ButtonRelease-1>',self.drawMargins)
 
-        self.scale3=Scale(self.frame2,from_=0,to=1,orient=VERTICAL,resolution=0.05,sliderlength=15,label='bottom margin')
+        self.scale3=Scale(self.frame1,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,label='bottom margin')
         self.scale3.pack(side=LEFT)
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
 
         ### Below this is the canvas to show the image and margin lines
-        self.length=792
-        self.width=612
-        self.canvas1=Canvas(parent,width=self.width,height=self.length)   
+        self.canvas1=Canvas(parent,width=self.width,height=self.height)   
         self.canvas1.pack()
 
-        ### Draw the pdf on the canvas
-        # First, convert pdf to png
-        self.filename=filename.rstrip('pdf')
-        self.filename=self.filename.rstrip('.')
-        os.system('convert %s.pdf temp.png' %(self.filename,))
-        ### TODO - RESIZING IS NOT WORKING
-        #os.system('convert temp-1.png -resize %s temp-1.png' %self.width) # %(self.filename,self.width,))
+        ### Draw the pdf on the canvas        
         # Display image
-        self.img=ImageTk.PhotoImage(file='temp-0.png')
-        self.pdfimg=self.canvas1.create_image(self.width/2.,self.length/2.,image=self.img,) #need to choose image (getimage button?)
+        self.img=ImageTk.PhotoImage(self.img)
+        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img) #need to choose image (getimage button?)
+
         ### Draw margin lines - default are at the edges of the image
-        self.left=self.canvas1.create_line(0,0,0,self.length)
-        self.right=self.canvas1.create_line(self.width,0,self.width,self.length)
+        self.left=self.canvas1.create_line(0,0,0,self.height)
+        self.right=self.canvas1.create_line(self.width,0,self.width,self.height)
         self.top=self.canvas1.create_line(0,0,0,self.width)
-        self.bottom=self.canvas1.create_line(0,self.length,self.width,self.length)
+        self.bottom=self.canvas1.create_line(0,self.height,self.width,self.height)
 
         ### Quit and save buttons
         self.frame3=Frame(parent)
@@ -82,7 +94,6 @@ k2pdfopt - to convert pdf to epub
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
-
     def bReadyClick(self,event):
         leftmargin=self.scale2.get()*8.5/2.  #convert to inches
         topmargin=self.scale1.get()*11/2.
@@ -94,25 +105,22 @@ k2pdfopt - to convert pdf to epub
         self.myParent.destroy()
 
     def drawMargins(self,event):
-        cl=self.scale1.get()*self.length/2.
+        cl=self.scale1.get()*self.height/2.
         self.canvas1.coords(self.left,0,cl,self.width,cl)
-        cr=self.length/2.+self.scale3.get()*self.length/2.
+        cr=self.height/2.+self.scale3.get()*self.height/2.
         self.canvas1.coords(self.right,0,cr,self.width,cr)
         ct=self.scale2.get()*self.width/2.
-        self.canvas1.coords(self.top,ct,0,ct,self.length)
+        self.canvas1.coords(self.top,ct,0,ct,self.height)
         cb=self.width/2.+self.scale4.get()*self.width/2.
-        self.canvas1.coords(self.bottom,cb,0,cb,self.length)
+        self.canvas1.coords(self.bottom,cb,0,cb,self.height)
 
-
-        
-        
-
-#pdb.set_trace()
-
-root=Tk()
-myapp=MyApp(root,'~/Downloads/1210.3282v1.pdf')#filename)
-root.mainloop()
-
-
-#canvas - container for drawing
-#frame - most frequently used container
+if __name__ == '__main__':
+    #pdb.set_trace()
+    
+    root=Tk()
+    myapp=MyApp(root,'~/Downloads/13670050308667769.pdf')#filename)
+    root.mainloop()
+    
+    
+    #canvas - container for drawing
+    #frame - most frequently used container
