@@ -24,17 +24,23 @@ class MyApp:
     imagemagick - to convert pdf to png 
     k2pdfopt - to convert pdf to epub
     '''
-    def __init__(self,parent,filename):
+    def __init__(self,parent):
 
         # Some variable initialization
+        self.parent=parent
         self.page = 2        # page of interest, should be set by gui later
         self.height = 600      # intended height, also could be set by gui
         self.width = None
         self.img = None
-        self.imgaspect = None # aspect ration of image      
-        self.filename=filename.rstrip('.pdf')
+        self.imgaspect = None # aspect ration of image    
+        self.filename=self.chooseImage()
+        self.filename=self.filename.rstrip('pdf')
+        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
 
-        self.parent=parent
+        if self.filename=='':
+            print 'OK'
+            self.parent.destroy()
+        
         
         ### Loading and preparing the image. This is done first
         ### because the size of the canvas depends on the image size.
@@ -90,6 +96,10 @@ class MyApp:
         self.bQuit.grid(row=3,column=2,sticky=W)
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
+
+    def chooseImage(self):
+        filename = askopenfilename(initialdir='~/', filetypes=[("pdf","*.pdf"),])
+        return filename
 
     def prepImage(self):
         # First, convert pdf to png
@@ -173,7 +183,7 @@ def fileChooser():
 if __name__ == '__main__':
     #pdb.set_trace()
     root=Tk()
-    myapp=MyApp(root,'~/Downloads/1210.3282v1.pdf')#filename)
+    myapp=MyApp(root)#,'~/Downloads/1210.3282v1.pdf')
     root.mainloop()
     #canvas - container for drawing
     #frame - most frequently used container
