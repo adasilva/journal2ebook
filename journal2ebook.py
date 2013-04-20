@@ -38,10 +38,12 @@ class MyApp:
         self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
 
         if self.filename=='':
-            print 'OK'
             self.parent.destroy()
-        
-        
+        else:
+            self.setup()
+
+    def setup(self):
+        '''Sets up the main window.'''
         ### Loading and preparing the image. This is done first
         ### because the size of the canvas depends on the image size.
         self.prepImage()
@@ -70,7 +72,7 @@ class MyApp:
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
 
         ### The canvas to show the image and margin lines spans 4 grid segments
-        self.canvas1=Canvas(parent,width=self.width,height=self.height)   
+        self.canvas1=Canvas(self.parent,width=self.width,height=self.height)   
         self.canvas1.grid(row=1,column=1,columnspan=2,rowspan=2)
 
         ### Draw the pdf on the canvas        
@@ -98,7 +100,7 @@ class MyApp:
         self.bQuit.bind('<Return>',self.bQuitClick)
 
     def chooseImage(self):
-        filename = askopenfilename(initialdir='~/', filetypes=[("pdf","*.pdf"),])
+        filename = askopenfilename(parent=self.parent,initialdir='~/', filetypes=[("pdf","*.pdf"),])
         return filename
 
     def prepImage(self):
