@@ -78,7 +78,7 @@ class MyApp:
         ### Draw the pdf on the canvas        
         # Display image
         self.img=ImageTk.PhotoImage(self.img)
-        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img) #need to choose image (getimage button?)
+        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
 
         ### Draw margin lines - default are at the edges of the image
         self.left=self.canvas1.create_line(0,0,0,self.height)
@@ -159,52 +159,11 @@ class MyApp:
     def bQuitClick(self,event):
         self.cleanUp()
         self.parent.destroy()
-'''
 
-class FileChooser():
-    #gui for choosing file to convert
-    def __init__(self,parent):
-        self.parent=parent
-        ### File browser
-        self.frame1=Frame(parent)
-        self.filename = tkFileDialog.askopenfilename(filetypes=[("allfiles","*"),("pythonfiles","*.py")])
-        ### Quit and save buttons
-        self.frame2=Frame(parent)
-        self.frame2.pack()
-        self.bReady=Button(self.frame2, text='OK')
-        self.bReady.pack(side=LEFT)
-        self.bReady.focus_force()  #Force focus to be on button1 on start
-        self.bReady.bind('<Button-1>',self.bReadyClick)
-        self.bReady.bind('<Return>',self.bReadyClick)
-        
-        self.bQuit=Button(self.frame2)
-        self.bQuit.configure(text='Cancel')
-        self.bQuit.pack(side=RIGHT)
-        self.bQuit.bind('<Button-1>',self.bQuitClick)
-        self.bQuit.bind('<Return>',self.bQuitClick)
 
-    def bReadyClick(self,event):
-        #Filename chooser.
-        self.parent.destroy()
-
-    def bQuitClick(self,event):
-        #Quit without choosing a file.
-        self.filename = None  #returns no files!
-        self.parent.destroy()
-'''
-
-def fileChooser():
-    root=Tk()
-    filename = askopenfilename(initialdir='~/', filetypes=[("pdf","*.pdf"),])
-    return filename
-
- 
 if __name__ == '__main__':
-    #pdb.set_trace()
     root=Tk()
     myapp=MyApp(root)#,'~/Downloads/1210.3282v1.pdf')
     #myapp=MyApp(root,'~/Downloads/1210.3282v1.pdf')#filename)
     #myapp=MyApp(root,'C:\\Users\\Jason\\Desktop\\sk2006.pdf')#filename)
     root.mainloop()
-    #canvas - container for drawing
-    #frame - most frequently used container
