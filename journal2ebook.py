@@ -133,7 +133,8 @@ class MyApp:
 if __name__ == '__main__':
     #pdb.set_trace()
     root=Tk()
-    myapp=MyApp(root,'~/Downloads/1210.3282v1.pdf')#filename)
+    #myapp=MyApp(root,'~/Downloads/1210.3282v1.pdf')#filename)
+    myapp=MyApp(root,'C:\\Users\\Jason\\Desktop\\sk2006.pdf')#filename)
     root.mainloop()
     #canvas - container for drawing
     #frame - most frequently used container
