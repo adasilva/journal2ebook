@@ -87,6 +87,11 @@ class MyApp:
         self.bottom=self.canvas1.create_line(0,self.height,self.width,self.height)
 
         ### Quit and save buttons in the bottom row
+        self.bNewFile=Button(self.parent, text='new file')
+        self.bNewFile.grid(row=3,column=0,sticky=E)
+        self.bNewFile.bind('<Button-1>',self.bNewFileClick)
+        self.bNewFile.bind('<Return>',self.bNewFileClick)
+
         self.bReady=Button(self.parent, text='ready!', background='green')
         self.bReady.grid(row=3,column=1,sticky=E)
         self.bReady.focus_force()  #Force focus to be on button1 on start
@@ -131,6 +136,18 @@ class MyApp:
         
         for f in files:
             os.remove(f)
+
+    def bNewFileClick(self,event):
+        self.filename=self.chooseImage()
+        self.filename=self.filename.rstrip('pdf')
+        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
+        if self.filename=='':
+            self.parent.destroy()
+        else:
+            self.cleanUp()
+            self.prepImage()
+            self.img=ImageTk.PhotoImage(self.img)
+            self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
 
     def bReadyClick(self,event):
         leftmargin=self.scale2.get()*8.5/2.  #convert to inches
