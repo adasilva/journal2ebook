@@ -7,6 +7,7 @@ import re
 import pdb
 import time
 import glob
+import subprocess
 
 class MyApp:
     '''
@@ -126,7 +127,8 @@ class MyApp:
     def prepImage(self):
         # First, convert pdf to png
         t1=time.time()
-        os.system('convert %s.pdf temp.png' % self.filename)
+        subprocess.call(['convert', self.filename+'.pdf', 'temp.png'])
+        #os.system('convert %s.pdf temp.png' % self.filename)
         print 'convert to pdf took ', time.time()-t1, ' s'
         # Resize the image
         self.img = PIL.Image.open('temp-%s.png' % self.page)
@@ -189,7 +191,8 @@ class MyApp:
         if self.skipFirst.get()==1:
             npages=len([f for f in glob.glob("*.png") if re.match('temp-',f)])
             pagerange='2-'+str(npages)
-            os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
+            subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
+            #os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
         else:
             os.system('k2pdfopt -x -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
 
