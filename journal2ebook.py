@@ -26,16 +26,19 @@ class MyApp:
     k2pdfopt - to convert pdf to epub
     '''
     def __init__(self,parent):
-
         # Some variable initialization
         self.parent=parent
-        self.page = 1        # page of interest, should be set by gui later
+        self.page = 0 # page of interest, should be set by gui later
+        self.pageString=StringVar()
+        self.pageString.set(self.page+1)
+        self.maxPages = None
         self.skipFirst = IntVar()
         self.height = 600      # intended height, also could be set by gui
         self.width = None
         self.img = None
         self.imgaspect = None # aspect ration of image    
         self.filename=self.chooseImage()
+        print self.filename
         self.filename=self.filename.rstrip('pdf')
         self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
         # can't handle docs with spaces
@@ -49,6 +52,7 @@ class MyApp:
         '''Sets up the main window.'''
         ### Loading and preparing the image. This is done first
         ### because the size of the canvas depends on the image size.
+        self.convertImage()
         self.prepImage()
         
         ### Application uses the grid geometry management
@@ -88,8 +92,7 @@ class MyApp:
 
         ### Draw the pdf on the canvas        
         # Display image
-        self.img=ImageTk.PhotoImage(self.img)
-        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
+        self.drawImage()
 
         ### Draw margin lines - default are at the edges of the image
         self.left=self.canvas1.create_line(0,0,0,self.height)
@@ -119,23 +122,64 @@ class MyApp:
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
+        self.bDec=Button(self.parent)
+        self.bDec.configure(text='<',background='blue')
+        self.bDec.grid(row=5,column=2, sticky=W)
+        self.bDec.bind('<Button-1>', self.bDecClick)
+        
+        self.pageEntry = Entry(self.parent,textvariable=self.pageString,width=4)
+        self.pageEntry.grid(row=5,column=2)
+        self.pageEntry.bind('<Return>',self.updateImage)
+
+        self.bInc=Button(self.parent)
+        self.bInc.configure(text='>',background='blue')
+        self.bInc.grid(row=5,column=2, sticky=E)
+        self.bInc.bind('<Button-1>', self.bIncClick)
+      
     def chooseImage(self):
-        filename = askopenfilename(parent=self.parent,initialdir='~/', filetypes=[("pdf","*.pdf"),])
+        filename = askopenfilename(parent=self.parent,initialdir='~/', filetypes=[('pdf','*.pdf'),])
         return filename
 
-    def prepImage(self):
+    def convertImage(self):
         # First, convert pdf to png
         t1=time.time()
         os.system('convert %s.pdf temp.png' % self.filename)
+        files = [f for f in glob.glob('*.png') if re.match('temp-',f)]
+        self.maxPages = len(files)
         print 'convert to pdf took ', time.time()-t1, ' s'
+        
+    def prepImage(self):
         # Resize the image
         self.img = PIL.Image.open('temp-%s.png' % self.page)
-        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])        
+        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
         t1=time.time()
         self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
         print 'resize took ', time.time()-t1, ' s'
 
+    def updateImage(self,event):
+        if int(self.pageString.get()) > self.maxPages:
+            self.pageString.set(self.maxPages)
+        elif int(self.pageString.get()) <= 0:
+            self.pageString.set(1)            
+        self.page = int(self.pageString.get())-1       
+        self.prepImage()
+        self.canvas1.delete('all')
+        self.drawImage()
+        #self.drawMargins(event)
+        cl=self.scale1.get()*self.height/2.
+        self.left=self.canvas1.create_line(0,cl,self.width,cl)
+        cr=self.height/2.+self.scale3.get()*self.height/2.
+        self.right=self.canvas1.create_line(0,cr,self.width,cr)
+        ct=self.scale2.get()*self.width/2.
+        self.top=self.canvas1.create_line(ct,0,ct,self.height)
+        cb=self.width/2.+self.scale4.get()*self.width/2.
+        self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
+        
+    def drawImage(self):
+        self.img=ImageTk.PhotoImage(self.img)
+        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
+        
     def drawMargins(self,event):
         cl=self.scale1.get()*self.height/2.
         self.canvas1.coords(self.left,0,cl,self.width,cl)
@@ -145,28 +189,37 @@ class MyApp:
         self.canvas1.coords(self.top,ct,0,ct,self.height)
         cb=self.width/2.+self.scale4.get()*self.width/2.
         self.canvas1.coords(self.bottom,cb,0,cb,self.height)
-       
+        
     def cleanUp(self):
         ''' Cleans up temp files that were created. A more elegant way
         to do this might be to create a temp folder and remove the
         entire folder afterwards.'''
-        files = [f for f in glob.glob("*.png") if re.match('temp-',f)]
+        files = [f for f in glob.glob('*.png') if re.match('temp-',f)]
         
         for f in files:
             os.remove(f)
 
+    def bDecClick(self,event):
+        self.pageString.set(int(self.pageString.get()) - 1)
+        self.updateImage(event)
+        
+    def bIncClick(self,event):    
+        self.pageString.set(int(self.pageString.get()) + 1)
+        self.updateImage(event)
+           
     def bNewFileClick(self,event):
         self.filename=self.chooseImage()
-        self.filename=self.filename.rstrip('pdf')
-        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
+        print self.filename
         if self.filename=='':
             self.parent.destroy()
         else:
+            self.filename=self.filename.rstrip('pdf')
+            self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
             self.cleanUp()
             self.canvas1.delete('all')
+            self.convertImage()
             self.prepImage()
-            self.img=ImageTk.PhotoImage(self.img)
-            self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
+            self.drawImage()
             cl=self.scale1.get()*self.height/2.
             self.canvas1.coords(self.left,0,cl,self.width,cl)
             cr=self.height/2.+self.scale3.get()*self.height/2.
@@ -187,7 +240,7 @@ class MyApp:
         bottommargin=(1-self.scale3.get())*11/2.
         rightmargin=(1-self.scale4.get())*8.5/2.
         if self.skipFirst.get()==1:
-            npages=len([f for f in glob.glob("*.png") if re.match('temp-',f)])
+            npages=len([f for f in glob.glob('*.png') if re.match('temp-',f)])
             pagerange='2-'+str(npages)
             os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
         else:
@@ -196,7 +249,6 @@ class MyApp:
     def bQuitClick(self,event):
         self.cleanUp()
         self.parent.destroy()
-
 
 if __name__ == '__main__':
     root=Tk()
