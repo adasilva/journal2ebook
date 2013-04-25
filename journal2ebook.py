@@ -103,20 +103,20 @@ class MyApp:
         self.bSkipFirst.grid(row=1,column=5,sticky=NW)
 
         ### Quit and save buttons in the bottom row
-        self.bNewFile=Button(self.parent, text='new file')
+        self.bNewFile=Button(self.parent, text='new file',background='#8C99DF')
         self.bNewFile.grid(row=5,column=0,sticky=W)
         self.bNewFile.bind('<Button-1>',self.bNewFileClick)
         self.bNewFile.bind('<Return>',self.bNewFileClick)
 
-        self.bReady=Button(self.parent, text='ready!', background='green')
-        self.bReady.grid(row=5,column=4,sticky=E)
+        self.bReady=Button(self.parent, text='Ready!', background='#8C99DF')
+        self.bReady.grid(row=5,column=4,sticky=E+W)
         self.bReady.focus_force()  #Force focus to be on button1 on start
         self.bReady.bind('<Button-1>',self.bReadyClick)
         self.bReady.bind('<Return>',self.bReadyClick)
         
         self.bQuit=Button(self.parent)
-        self.bQuit.configure(text='quit',background='red')
-        self.bQuit.grid(row=5,column=5,sticky=E)
+        self.bQuit.configure(text='Quit',background='#8C99DF')
+        self.bQuit.grid(row=5,column=5,sticky=W+E)
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
@@ -170,18 +170,14 @@ class MyApp:
             self.img=ImageTk.PhotoImage(self.img)
             self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
             cl=self.scale1.get()*self.height/2.
-            self.canvas1.coords(self.left,0,cl,self.width,cl)
+            self.left=self.canvas1.create_line(0,cl,self.width,cl)
             cr=self.height/2.+self.scale3.get()*self.height/2.
-            self.canvas1.coords(self.right,0,cr,self.width,cr)
+            self.right=self.canvas1.create_line(0,cr,self.width,cr)
             ct=self.scale2.get()*self.width/2.
-            self.canvas1.coords(self.top,ct,0,ct,self.height)
+            self.top=self.canvas1.create_line(ct,0,ct,self.height)
             cb=self.width/2.+self.scale4.get()*self.width/2.
-            self.canvas1.coords(self.bottom,cb,0,cb,self.height)
+            self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
 
-            self.left=self.canvas1.create_line(cl)
-            self.right=self.canvas1.create_line(cr)
-            self.top=self.canvas1.create_line(ct)
-            self.bottom=self.canvas1.create_line(cb)
 
     def bReadyClick(self,event):
         leftmargin=self.scale2.get()*8.5/2.  #convert to inches
@@ -194,7 +190,8 @@ class MyApp:
             subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
             #os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
         else:
-            os.system('k2pdfopt -x -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
+            subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
+            #os.system('k2pdfopt -x -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
 
     def bQuitClick(self,event):
         self.cleanUp()
@@ -204,7 +201,5 @@ class MyApp:
 if __name__ == '__main__':
     root=Tk()
     root.wm_title('journal2ebook')
-    myapp=MyApp(root)#,'~/Downloads/1210.3282v1.pdf')
-    #myapp=MyApp(root,'~/Downloads/1210.3282v1.pdf')#filename)
-    #myapp=MyApp(root,'C:\\Users\\Jason\\Desktop\\sk2006.pdf')#filename)
+    myapp=MyApp(root)
     root.mainloop()
