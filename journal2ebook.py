@@ -9,7 +9,7 @@ import time
 import glob
 import subprocess
 
-class MyApp:
+class Journal2ebook:
     '''
     Converts a pdf to an epub using the k2pdfopt application
     
@@ -126,17 +126,13 @@ class MyApp:
 
     def prepImage(self):
         # First, convert pdf to png
-        t1=time.time()
-        subprocess.call(['convert', self.filename+'.pdf', 'temp.png'])
-        #os.system('convert %s.pdf temp.png' % self.filename)
-        print 'convert to pdf took ', time.time()-t1, ' s'
+        imFile=os.path.join(os.path.dirname(self.filename),'temp')
+        subprocess.call(['convert', self.filename+'.pdf', imFile+'.png'])
         # Resize the image
-        self.img = PIL.Image.open('temp-%s.png' % self.page)
-        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])        
+        self.img = PIL.Image.open(imFile+'-%s.png' % self.page)
+        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
-        t1=time.time()
         self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
-        print 'resize took ', time.time()-t1, ' s'
 
     def drawMargins(self,event):
         cl=self.scale1.get()*self.height/2.
@@ -188,10 +184,8 @@ class MyApp:
             npages=len([f for f in glob.glob("*.png") if re.match('temp-',f)])
             pagerange='2-'+str(npages)
             subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
-            #os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
         else:
             subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
-            #os.system('k2pdfopt -x -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
 
     def bQuitClick(self,event):
         self.cleanUp()
@@ -201,5 +195,5 @@ class MyApp:
 if __name__ == '__main__':
     root=Tk()
     root.wm_title('journal2ebook')
-    myapp=MyApp(root)
+    myapp=Journal2ebook(root)
     root.mainloop()
