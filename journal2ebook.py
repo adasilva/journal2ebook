@@ -1,7 +1,7 @@
 import ImageTk
 import PIL.Image
 from Tkinter import *
-from tkFileDialog import askopenfilename
+from tkFileDialog import askopenfilename,asksaveasfilename
 import os
 import re
 import pdb
@@ -27,9 +27,14 @@ class Journal2ebook:
     k2pdfopt - to convert pdf to epub
     '''
     def __init__(self,parent):
+        # configuration file
+        f=open('./journal2ebook.conf','r')
+        self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].replace(' ','').rstrip('\n') for line in f} #dictionary of configuration variables
+        f.close()
+        self.profileList=[]
         # Some variable initialization
         self.parent=parent
-        self.page = 0 # page of interest, should be set by gui later
+        self.page = 0 
         self.pageString=StringVar()
         self.pageString.set(self.page+1)
         self.maxPages = None
@@ -40,10 +45,13 @@ class Journal2ebook:
         self.imgaspect = None # aspect ration of image    
         self.filename=self.chooseImage()
         self.filedir=os.path.dirname(self.filename)  #directory
-        os.mkdir(os.path.join(self.filedir,'tempfiles'))
+        try:
+            os.mkdir(os.path.join(self.filedir,'tempfiles'))
+            self.tempdirexists=False
+        except OSError:
+            self.tempdirexists=True
         self.filename=self.filename.rstrip('pdf')
         self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
-
         if self.filename=='':
             self.parent.destroy()
         else:
@@ -55,19 +63,35 @@ class Journal2ebook:
         ### because the size of the canvas depends on the image size.
         self.convertImage()
         self.prepImage()
-        
+
         ### Application uses the grid geometry management
-        # currently the size is 6 rows x 5 columns
+        # currently the size is 7 rows x 5 columns
+        
+        # Set up a menu bar with Tools.
+        self.fMenu=Frame(self.parent, relief='groove')
+        self.fMenu.grid(row=0,column=0,columnspan=5)
+
+        self.menubar=Menu(self.parent) #menubar
+        self.parent.config(menu=self.menubar) #configuration
+
+        #create one of the menus in the menubar and 
+        #add a cascade to contain the tools
+        self.tools=Menu(self.menubar)
+        self.menubar.add_cascade(label='Tools',menu=self.tools)
+        # Add tools to the menu
+        self.tools.add_command(label='Save Profile',command=self.saveProfile)
+        #self.menubar.add_command(label='Choose Profile')
+        self.tools.add_command(label='Exit',command=lambda: self.bQuitClick(None))
 
         ### Row 0 is the left and right margin scale bars
         self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.)
-        self.scale2.grid(row=0,column=1,columnspan=2,sticky=W)
+        self.scale2.grid(row=1,column=1,columnspan=2,sticky=W)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Right>',self.drawMargins)
 
         self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.,showvalue=1.)
-        self.scale4.grid(row=0,column=3,columnspan=2,sticky=E)
+        self.scale4.grid(row=1,column=3,columnspan=2,sticky=E)
         self.scale4.set(1.)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale4.bind('<KeyRelease-Left>',self.drawMargins)
@@ -75,13 +99,13 @@ class Journal2ebook:
 
         ### Columns 0 contains the top and bottom margins
         self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.)
-        self.scale1.grid(row=1,column=0,sticky=NW)
+        self.scale1.grid(row=2,column=0,sticky=NW)
         self.scale1.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Up>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Down>',self.drawMargins)
 
         self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.)
-        self.scale3.grid(row=3,column=0,sticky=SW)
+        self.scale3.grid(row=4,column=0,sticky=SW)
         self.scale3.set(1.)
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale3.bind('<KeyRelease-Up>',self.drawMargins)
@@ -89,7 +113,7 @@ class Journal2ebook:
 
         ### The canvas to show the image and margin lines spans 4 grid segments
         self.canvas1=Canvas(self.parent,width=self.width,height=self.height)   
-        self.canvas1.grid(row=1,column=1,columnspan=4,rowspan=4)
+        self.canvas1.grid(row=2,column=1,columnspan=4,rowspan=4)
 
         ### Draw the pdf on the canvas        
         # Display image
@@ -103,38 +127,53 @@ class Journal2ebook:
         
         ### Some extra options in last column
         self.bSkipFirst=Checkbutton(self.parent,text='Skip first page',variable=self.skipFirst)
-        self.bSkipFirst.grid(row=1,column=5,sticky=NW)
+        self.bSkipFirst.grid(row=2,column=5,sticky=NW)
+
+        ### Profiles list box
+        self.lProfiles=Listbox(self.parent)
+        self.lProfiles.grid(row=2,column=5,sticky=SW)
+        self.lProfiles.bind('<<ListboxSelect>>',self.chooseProfile)
+
+        if self.configVars['profiles']!='None':
+            f=open(self.configVars['profiles'],'r')
+            for line in f:
+                item=line.strip(']').strip('[').strip('\n').split(',')
+                self.profileList.append(item)
+            f.close()
+
+        for i in range(len(self.profileList)):
+            self.lProfiles.insert(END,self.profileList[i][0])
 
         ### Quit and save buttons in the bottom row
         self.bNewFile=Button(self.parent, text='new file',background='#8C99DF')
-        self.bNewFile.grid(row=5,column=0,sticky=W)
+        self.bNewFile.grid(row=6,column=0,sticky=W)
         self.bNewFile.bind('<Button-1>',self.bNewFileClick)
         self.bNewFile.bind('<Return>',self.bNewFileClick)
 
         self.bReady=Button(self.parent, text='Ready!', background='#8C99DF')
-        self.bReady.grid(row=5,column=4,sticky=E+W)
+        self.bReady.grid(row=6,column=4,sticky=E+W)
         self.bReady.focus_force()  #Force focus to be on button1 on start
         self.bReady.bind('<Button-1>',self.bReadyClick)
         self.bReady.bind('<Return>',self.bReadyClick)
         
         self.bQuit=Button(self.parent)
         self.bQuit.configure(text='Quit',background='#8C99DF')
-        self.bQuit.grid(row=5,column=5,sticky=W+E)
+        self.bQuit.grid(row=6,column=5,sticky=W+E)
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
         self.bDec=Button(self.parent)
         self.bDec.configure(text='<',background='blue')
-        self.bDec.grid(row=5,column=2, sticky=W)
+        self.bDec.grid(row=6,column=2, sticky=W)
         self.bDec.bind('<Button-1>', self.bDecClick)
         
         self.pageEntry = Entry(self.parent,textvariable=self.pageString,width=4)
-        self.pageEntry.grid(row=5,column=2)
+        self.pageEntry.grid(row=6,column=2)
         self.pageEntry.bind('<Return>',self.updateImage)
 
         self.bInc=Button(self.parent)
         self.bInc.configure(text='>',background='blue')
-        self.bInc.grid(row=5,column=2, sticky=E)
+        self.bInc.grid(row=6,column=2, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
       
     def chooseImage(self):
@@ -144,17 +183,13 @@ class Journal2ebook:
     def convertImage(self):
         # First, convert pdf to png
         imFile=os.path.join(self.filedir,'tempfiles','temp')
-        print 'in convertImage: imFile = %s' %imFile
         subprocess.call(['convert', self.filename+'.pdf', imFile+'.png'])
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
-        print files
         self.maxPages = len(files)
-        print 'self.maxPages = ',self.maxPages
  
     def prepImage(self):
         # Resize the image
         imFile=os.path.join(os.path.dirname(self.filename),'tempfiles','temp')
-        print 'in prepImage: opening %s-%s.png' %(imFile,self.page)
         self.img = PIL.Image.open(imFile+'-%s.png' % self.page)
         self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
@@ -166,7 +201,6 @@ class Journal2ebook:
         elif int(self.pageString.get()) <= 0:
             self.pageString.set(1)            
         self.page = int(self.pageString.get())-1   
-        print 'in updateImage: self.pageString = %s' %self.pageString.get()
         self.prepImage()
         self.canvas1.delete('all')
         self.drawImage()
@@ -200,8 +234,8 @@ class Journal2ebook:
 
         for f in files:
             os.remove(f)
-
-        os.rmdir(os.path.join(self.filedir,'tempfiles'))
+        if not self.tempdirexists:
+            os.rmdir(os.path.join(self.filedir,'tempfiles'))
 
     def bDecClick(self,event):
         self.pageString.set(int(self.pageString.get()) - 1)
@@ -233,18 +267,101 @@ class Journal2ebook:
             cb=self.width/2.+self.scale4.get()*self.width/2.
             self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
 
+    def saveProfile(self):
+        if self.configVars['profiles']=='None':
+            self.setupProfiles()
 
+        self.saveProfileDialog=Toplevel(self.parent)
+        profileNameLabel=Label(self.saveProfileDialog,text='Journal name: ')
+        profileNameText=StringVar()
+        profileNameEntry=Entry(self.saveProfileDialog,width=25,textvariable=profileNameText)
+        profileNameLabel.grid(row=0,column=0,sticky=W)
+        profileNameEntry.grid(row=1,column=0,sticky=W)
+        
+        bOK=Button(self.saveProfileDialog)
+        bOK.configure(text='OK')
+        bOK.focus_force()
+        bOK.bind('<Button-1>',lambda event: self.addProfile(profileNameText.get()))
+        bOK.bind('<Return>',lambda event: self.addProfile(profileNameText.get()))
+        bOK.grid(row=1,column=0,sticky=E)
+
+        bCancel=Button(self.saveProfileDialog)
+        bCancel.configure(text='Cancel')
+        bCancel.bind('<Button-1>',lambda event: self.saveProfileDialog.destroy())
+        bCancel.bind('<Return>',lambda event: self.saveProfileDialog.destroy())
+        bCancel.grid(row=2,column=1,sticky=W)
+ 
+    def setupProfiles(self):
+        self.profileDialog=Toplevel(self.parent)
+        self.fileBoxText=StringVar()
+        msg=Message(self.profileDialog,text='This is your first time accessing profiles!\n\nProfiles allow you to save settings that work well for a particular journal or set of journals. \n\nTo begin, select the file in which to save your profile parameters:')
+        msg.grid(row=0,column=0,sticky=W)
+        fileBox=Entry(self.profileDialog,width=50,textvariable=self.fileBoxText)
+        self.fileBoxText.set('/home/ashley/journal2ebook.txt')
+        fileBox.grid(row=1,column=0,sticky=W)
+
+        bBrowse=Button(self.profileDialog)
+        bBrowse.configure(text='Browse')
+        bBrowse.bind('<Button-1>',lambda event:self.fileBoxText.set(asksaveasfilename(parent=self.profileDialog,)))
+        bBrowse.bind('<Return>',lambda event:self.fileBoxText.set(asksaveasfilename(parent=self.profileDialog,)))
+        bBrowse.grid(row=1,column=1,sticky=W)
+
+        bOK=Button(self.profileDialog)
+        bOK.configure(text='OK')
+        bOK.focus_force()
+        bOK.bind('<Button-1>',self.profilesOK)
+        bOK.bind('<Return>',self.profilesOK)
+        bOK.grid(row=2,column=0,sticky=E)
+
+        bCancel=Button(self.profileDialog)
+        bCancel.configure(text='Cancel')
+        bCancel.bind('<Button-1>',lambda event: self.profileDialog.destroy())
+        bCancel.bind('<Return>',lambda event: self.profileDialog.destroy())
+        bCancel.grid(row=2,column=1,sticky=W)
+   
+    def profilesOK(self,event):
+        self.configVars['profiles'] = self.fileBoxText.get()
+        print 'fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
+        f=open('./journal2ebook.conf','w')
+        for item in self.configVars:
+            f.write('%s : %s\n' %(str(item),self.configVars[item]))
+        f.close()
+        #need to create the profiles file in stated location
+        self.profileDialog.destroy()
+
+    def addProfile(self,profileName):
+        newProfile=[profileName,self.skipFirst.get(),self.scale1.get(),self.scale2.get(),self.scale3.get(),self.scale4.get()]
+        self.profileList.append(newProfile)
+        f=open(self.configVars['profiles'],'a+') #'a+' to append at the end of file
+        profileStr=newProfile[0]
+        for i in range(1,len(newProfile)):
+            profileStr=profileStr+','+str(newProfile[i])
+        f.write(profileStr+'\n')  
+        f.close()
+        self.lProfiles.insert(END,profileName) 
+        self.saveProfileDialog.destroy()
+
+    def chooseProfile(self,event):
+        i=int(event.widget.curselection()[0])
+        self.skipFirst.set(self.profileList[i][1])
+        self.scale1.set(self.profileList[i][2])
+        self.scale2.set(self.profileList[i][3])
+        self.scale3.set(self.profileList[i][4])
+        self.scale4.set(self.profileList[i][5])
+        self.drawMargins(event)
+        
     def bReadyClick(self,event):
         leftmargin=self.scale2.get()*8.5/2.  #convert to inches
         topmargin=self.scale1.get()*11/2.
         bottommargin=(1-self.scale3.get())*11/2.
         rightmargin=(1-self.scale4.get())*8.5/2.
+        newFileName=asksaveasfilename(parent=root,filetypes=[('pdf','*.pdf'),('epub','*.epub')] ,title="Save the image as")
         if self.skipFirst.get()==1:
             npages=len([f for f in glob.glob('*.png') if re.match('temp-',f)])
             pagerange='2-'+str(npages)
-            subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
+            subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,self.filename+'.pdf'])
         else:
-            subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-',self.filename+'.pdf'])
+            subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o', newFileName, self.filename+'.pdf'])
 
     def bQuitClick(self,event):
         self.cleanUp()
