@@ -200,7 +200,7 @@ class MyApp:
         ''' Cleans up temp files that were created. A more elegant way
         to do this might be to create a temp folder and remove the
         entire folder afterwards.'''
-        files = [f for f in glob.glob('*.png') if re.match('temp-',f)]
+        files = [f for f in glob.glob('*.png') if re.match('temp',f)]
         
         for f in files:
             os.remove(f)
