@@ -143,7 +143,7 @@ class MyApp:
     def convertImage(self):
         # First, convert pdf to png
         t1=time.time()
-        os.system('convert %s.pdf temp.png' % self.filename)
+        os.system('convert "%s.pdf" temp.png' % self.filename)
         files = [f for f in glob.glob('*.png') if re.match('temp-',f)]
         self.maxPages = len(files)
         print 'convert to pdf took ', time.time()-t1, ' s'
