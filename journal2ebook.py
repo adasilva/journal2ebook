@@ -150,7 +150,13 @@ class MyApp:
         
     def prepImage(self):
         # Resize the image
-        self.img = PIL.Image.open('temp-%s.png' % self.page)
+        try:
+            self.img = PIL.Image.open('temp-%s.png' % self.page)
+        except IOError:
+            try:
+                self.img = PIL.Image.open('temp.png')
+            except IOError as detail:
+                print 'Couldn\'t load file: ', detail
         self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
         t1=time.time()
@@ -242,9 +248,9 @@ class MyApp:
         if self.skipFirst.get()==1:
             npages=len([f for f in glob.glob('*.png') if re.match('temp-',f)])
             pagerange='2-'+str(npages)
-            os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
+            os.system('k2pdfopt -x -p %s -ml %s -mr %s -mt %s -mb %s -ui- "%s.pdf"' %(pagerange,leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
         else:
-            os.system('k2pdfopt -x -ml %s -mr %s -mt %s -mb %s -ui- %s.pdf' %(leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
+            os.system('k2pdfopt -x -ml %s -mr %s -mt %s -mb %s -ui- "%s.pdf"' %(leftmargin,rightmargin,topmargin,bottommargin,self.filename)) 
 
     def bQuitClick(self,event):
         self.cleanUp()
