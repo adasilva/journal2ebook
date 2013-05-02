@@ -176,8 +176,8 @@ class Journal2ebook:
         self.bInc.grid(row=6,column=2, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
       
-    def chooseImage(self):
-        filename = askopenfilename(parent=self.parent,initialdir='~/', filetypes=[('pdf','*.pdf'),])
+    def chooseImage(self,initdir='~/'):
+        filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
         return filename
 
     def convertImage(self):
@@ -246,11 +246,11 @@ class Journal2ebook:
         self.updateImage(event)
            
     def bNewFileClick(self,event):
-        self.filename=self.chooseImage()
-        print self.filename
-        if self.filename=='':
-            self.parent.destroy()
+        newFilename=self.chooseImage(initdir=self.filedir)
+        if newFilename==():
+            pass  #don't do anything
         else:
+            self.filename=newFilename
             self.filename=self.filename.rstrip('pdf')
             self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
             self.cleanUp()
