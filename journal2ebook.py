@@ -39,20 +39,21 @@ class Journal2ebook:
         self.width = None
         self.img = None
         self.imgaspect = None # aspect ration of image
+        self.filename = None        
+        self.filedir = None
         self.configFile = './journal2ebook.conf'
         # configuration file
         f=open(self.configFile,'r')
-        self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].replace(' ','').rstrip('\n') for line in f} #dictionary of configuration variables
+        self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
         f.close()
-        self.filename=self.chooseImage()
-        self.filedir=os.path.dirname(self.filename)  #directory
+        print self.configVars
+        self.chooseImage()
         try:
             os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
         except OSError:
             self.tempdirexists=True
-        self.filename=self.filename.rstrip('pdf')
-        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
+
         if self.filename=='':
             self.parent.destroy()
         else:
@@ -178,10 +179,19 @@ class Journal2ebook:
         self.bInc.bind('<Button-1>', self.bIncClick)
       
     def chooseImage(self):
-        filename = askopenfilename(parent=self.parent,initialdir='~/', filetypes=[('pdf','*.pdf'),])
-
-        return filename
-
+        if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
+            initdir = self.configVars['last_dir']+"/"
+            print initdir
+        else:
+            initdir = '~/'        
+        self.filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
+        self.filedir=os.path.dirname(self.filename) #directory
+        self.filename=self.filename.rstrip('pdf')
+        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
+        if self.filedir:            
+            self.configVars['last_dir'] = self.filedir
+            self.saveConfig()
+        
     def convertImage(self):
         # First, convert pdf to png
         imFile=os.path.join(self.filedir,'tempfiles','temp')
@@ -324,13 +334,16 @@ class Journal2ebook:
     def profilesOK(self,event):
         self.configVars['profiles'] = self.fileBoxText.get()
         print 'fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
+        self.saveConfig()
+        #need to create the profiles file in stated location
+        self.profileDialog.destroy()
+        
+    def saveConfig(self):
         f=open(self.configFile,'w')
         for item in self.configVars:
             f.write('%s : %s\n' %(str(item),self.configVars[item]))
         f.close()
-        #need to create the profiles file in stated location
-        self.profileDialog.destroy()
-
+        
     def addProfile(self,profileName):
         newProfile=[profileName,self.skipFirst.get(),self.scale1.get(),self.scale2.get(),self.scale3.get(),self.scale4.get()]
         self.profileList.append(newProfile)
