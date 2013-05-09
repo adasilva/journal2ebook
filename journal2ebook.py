@@ -27,10 +27,6 @@ class Journal2ebook:
     k2pdfopt - to convert pdf to epub
     '''
     def __init__(self,parent):
-        # configuration file
-        f=open('./journal2ebook.conf','r')
-        self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].replace(' ','').rstrip('\n') for line in f} #dictionary of configuration variables
-        f.close()
         self.profileList=[]
         # Some variable initialization
         self.parent=parent
@@ -42,7 +38,12 @@ class Journal2ebook:
         self.height = 600      # intended height, also could be set by gui
         self.width = None
         self.img = None
-        self.imgaspect = None # aspect ration of image    
+        self.imgaspect = None # aspect ration of image
+        self.configFile = './journal2ebook.conf'
+        # configuration file
+        f=open(self.configFile,'r')
+        self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].replace(' ','').rstrip('\n') for line in f} #dictionary of configuration variables
+        f.close()
         self.filename=self.chooseImage()
         self.filedir=os.path.dirname(self.filename)  #directory
         try:
@@ -178,6 +179,7 @@ class Journal2ebook:
       
     def chooseImage(self):
         filename = askopenfilename(parent=self.parent,initialdir='~/', filetypes=[('pdf','*.pdf'),])
+
         return filename
 
     def convertImage(self):
@@ -297,7 +299,7 @@ class Journal2ebook:
         msg=Message(self.profileDialog,text='This is your first time accessing profiles!\n\nProfiles allow you to save settings that work well for a particular journal or set of journals. \n\nTo begin, select the file in which to save your profile parameters:')
         msg.grid(row=0,column=0,sticky=W)
         fileBox=Entry(self.profileDialog,width=50,textvariable=self.fileBoxText)
-        self.fileBoxText.set('/home/ashley/journal2ebook.txt')
+        self.fileBoxText.set('~/journal2ebook.txt')
         fileBox.grid(row=1,column=0,sticky=W)
 
         bBrowse=Button(self.profileDialog)
@@ -322,7 +324,7 @@ class Journal2ebook:
     def profilesOK(self,event):
         self.configVars['profiles'] = self.fileBoxText.get()
         print 'fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
-        f=open('./journal2ebook.conf','w')
+        f=open(self.configFile,'w')
         for item in self.configVars:
             f.write('%s : %s\n' %(str(item),self.configVars[item]))
         f.close()
