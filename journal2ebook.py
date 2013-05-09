@@ -42,12 +42,34 @@ class Journal2ebook:
         self.filename = None        
         self.filedir = None
         self.configFile = './journal2ebook.conf'
+        
         # configuration file
-        f=open(self.configFile,'r')
-        self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
-        f.close()
-        print self.configVars
+        try:
+            f=open(self.configFile,'r')
+            self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
+            f.close()
+        except IOError:
+            self.profileDialog=Toplevel(self.parent)
+
+            # Couldn't get this button box working.
+            # msg=Message(self.profileDialog,text='No configuration file found. A new configuration file has been created for you.')
+            # msg.grid(row=0,column=0,sticky=W)
+
+            # bOK=Button(self.profileDialog)
+            # bOK.configure(text='OK')
+            # bOK.focus_force()
+            # bOK.bind('<Button-1>',self.parent.destroy)
+            # bOK.bind('<Return>',self.parent.destroy)
+            # bOK.grid(row=1,column=0)
+
+            os.system("touch " + self.configFile)
+
+            f=open(self.configFile,'r')
+            self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
+            f.close()
+
         self.chooseImage()
+        
         try:
             os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
@@ -136,7 +158,7 @@ class Journal2ebook:
         self.lProfiles.grid(row=2,column=5,sticky=SW)
         self.lProfiles.bind('<<ListboxSelect>>',self.chooseProfile)
 
-        if self.configVars['profiles']!='None':
+        if 'profiles' in self.configVars and self.configVars['profiles']!='None':
             f=open(self.configVars['profiles'],'r')
             for line in f:
                 item=line.strip(']').strip('[').strip('\n').split(',')
@@ -280,7 +302,7 @@ class Journal2ebook:
             self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
 
     def saveProfile(self):
-        if self.configVars['profiles']=='None':
+        if 'profiles' not in self.configVars or self.configVars['profiles']=='None':
             self.setupProfiles()
 
         self.saveProfileDialog=Toplevel(self.parent)
