@@ -69,10 +69,7 @@ class Journal2ebook:
             f=open(self.configFile,'r')
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
             f.close()
-
-        print "shit0"
         self.chooseImage()
-        print self.filename
         try:
             os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
@@ -204,15 +201,11 @@ class Journal2ebook:
         self.bInc.bind('<Button-1>', self.bIncClick)
       
     def chooseImage(self):
-        print "shitxxx"
         if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
             initdir = self.configVars['last_dir']+"/"
-            print initdir + "crap1"
         else:
             initdir = '~/'
-            print initdir + "crap2"
         self.filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
-        print "shityyy"
         self.filedir=os.path.dirname(self.filename) #directory
         self.filename=self.filename.rstrip('pdf')
         self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
