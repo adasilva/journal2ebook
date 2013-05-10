@@ -62,7 +62,9 @@ class Journal2ebook:
             # bOK.bind('<Return>',self.parent.destroy)
             # bOK.grid(row=1,column=0)
 
-            os.system("touch " + self.configFile)
+            file = open(self.configFile, 'w')
+            file.write('')
+            file.close()
 
             f=open(self.configFile,'r')
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
@@ -217,10 +219,10 @@ class Journal2ebook:
     def convertImage(self):
         # First, convert pdf to png
         imFile=os.path.join(self.filedir,'tempfiles','temp')
-        subprocess.call(['convert', self.filename+'.pdf', imFile+'.png'])
+        subprocess.call(['convert', self.filename + '.pdf', imFile + '.png'])
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
- 
+        
     def prepImage(self):
         # Resize the image
         imFile=os.path.join(os.path.dirname(self.filename),'tempfiles','temp')
