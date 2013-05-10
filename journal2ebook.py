@@ -200,6 +200,7 @@ class Journal2ebook:
         self.bInc.grid(row=6,column=2, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
       
+
     def chooseImage(self):
         if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
             initdir = self.configVars['last_dir']+"/"
@@ -213,18 +214,26 @@ class Journal2ebook:
         if self.filedir:            
             self.configVars['last_dir'] = self.filedir
             self.saveConfig()
-        
+
     def convertImage(self):
         # First, convert pdf to png
-        imFile=os.path.join(self.filedir,'tempfiles','temp')
-        subprocess.call(['convert', self.filename+'.pdf', imFile+'.png'])
+        imFile=os.path.join(self.filedir,'tempfiles','temp.png')
+        subprocess.call(['convert', self.filename+'.pdf', imFile])
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
  
     def prepImage(self):
         # Resize the image
-        imFile=os.path.join(os.path.dirname(self.filename),'tempfiles','temp')
-        self.img = PIL.Image.open(imFile+'-%s.png' % self.page)
+        imFileName='temp-%s.png' % self.page
+        imFile=os.path.join(self.filedir,'tempfiles',imFileName)
+        print imFile
+        try:
+            self.img = PIL.Image.open(imFile)
+        except IOError:
+            try:
+                self.img = PIL.Image.open(os.path.join(self.filedir,'tempfiles','temp.png'))
+            except IOError as detail:
+                print 'Couldn\'t load file: ', detail
         self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
         self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
@@ -264,8 +273,7 @@ class Journal2ebook:
         
     def cleanUp(self):
         ''' Cleans up temp folder/files that were created. Might be an issue if folder already exists.'''
-        files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
-
+        files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp',os.path.basename(f))]
         for f in files:
             os.remove(f)
         if not self.tempdirexists:
@@ -280,11 +288,11 @@ class Journal2ebook:
         self.updateImage(event)
            
     def bNewFileClick(self,event):
-        self.filename=self.chooseImage()
-        print self.filename
-        if self.filename=='':
-            self.parent.destroy()
+        newFilename=self.chooseImage(initdir=self.filedir)
+        if newFilename==():
+            pass  #don't do anything
         else:
+            self.filename=newFilename
             self.filename=self.filename.rstrip('pdf')
             self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
             self.cleanUp()
@@ -396,9 +404,9 @@ class Journal2ebook:
         if self.skipFirst.get()==1:
             npages=len([f for f in glob.glob('*.png') if re.match('temp-',f)])
             pagerange='2-'+str(npages)
-            subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,self.filename+'.pdf'])
+            subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,'"'+self.filename+'.pdf"'])
         else:
-            subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o', newFileName, self.filename+'.pdf'])
+            subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o', newFileName, '"'+self.filename+'.pdf"'])
 
     def bQuitClick(self,event):
         self.cleanUp()
