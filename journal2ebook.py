@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import ImageTk
 import PIL.Image
 from Tkinter import *
