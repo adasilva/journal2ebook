@@ -62,14 +62,17 @@ class Journal2ebook:
             # bOK.bind('<Return>',self.parent.destroy)
             # bOK.grid(row=1,column=0)
 
-            os.system("touch " + self.configFile)
+            file = open(self.configFile, 'w')
+            file.write('')
+            file.close()
 
             f=open(self.configFile,'r')
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
             f.close()
 
+        print "shit0"
         self.chooseImage()
-        
+        print self.filename
         try:
             os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
@@ -199,15 +202,17 @@ class Journal2ebook:
         self.bInc.configure(text='>',background='blue')
         self.bInc.grid(row=6,column=2, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
-      
 
     def chooseImage(self):
+        print "shitxxx"
         if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
             initdir = self.configVars['last_dir']+"/"
-            print initdir
+            print initdir + "crap1"
         else:
-            initdir = '~/'        
+            initdir = '~/'
+            print initdir + "crap2"
         self.filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
+        print "shityyy"
         self.filedir=os.path.dirname(self.filename) #directory
         self.filename=self.filename.rstrip('pdf')
         self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
@@ -221,7 +226,7 @@ class Journal2ebook:
         subprocess.call(['convert', self.filename+'.pdf', imFile])
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
- 
+        
     def prepImage(self):
         # Resize the image
         imFileName='temp-%s.png' % self.page
