@@ -50,6 +50,7 @@ class Journal2ebook:
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
             f.close()
         except IOError:
+            # instead of doing this, maybe the config file should be set up on install?
             self.profileDialog=Toplevel(self.parent)
 
             # Couldn't get this button box working.
@@ -230,7 +231,7 @@ class Journal2ebook:
         # Resize the image
         imFileName='temp-%s.png' % self.page
         imFile=os.path.join(self.filedir,'tempfiles',imFileName)
-        print imFile
+        print 'in prepImage: imFile=', imFile
         try:
             self.img = PIL.Image.open(imFile)
         except IOError:
@@ -314,7 +315,7 @@ class Journal2ebook:
             self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
 
     def saveProfile(self):
-        if 'profiles' not in self.configVars or self.configVars['profiles']=='None':
+        if ('profiles' not in self.configVars) or (self.configVars['profiles']=='None'):
             self.setupProfiles()
 
         self.saveProfileDialog=Toplevel(self.parent)
@@ -343,7 +344,7 @@ class Journal2ebook:
         msg=Message(self.profileDialog,text='This is your first time accessing profiles!\n\nProfiles allow you to save settings that work well for a particular journal or set of journals. \n\nTo begin, select the file in which to save your profile parameters:')
         msg.grid(row=0,column=0,sticky=W)
         fileBox=Entry(self.profileDialog,width=50,textvariable=self.fileBoxText)
-        self.fileBoxText.set('~/journal2ebook.txt')
+        self.fileBoxText.set('./journal2ebook.txt')
         fileBox.grid(row=1,column=0,sticky=W)
 
         bBrowse=Button(self.profileDialog)
@@ -367,7 +368,7 @@ class Journal2ebook:
    
     def profilesOK(self,event):
         self.configVars['profiles'] = self.fileBoxText.get()
-        print 'fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
+        print 'in profilesOK: fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
         self.saveConfig()
         #need to create the profiles file in stated location
         self.profileDialog.destroy()
