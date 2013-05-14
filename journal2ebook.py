@@ -293,7 +293,7 @@ class Journal2ebook:
         self.updateImage(event)
            
     def bNewFileClick(self,event):
-        newFilename=self.chooseImage(initdir=self.filedir)
+        newFilename=self.chooseImage()
         if newFilename==():
             pass  #don't do anything
         else:
