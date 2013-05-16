@@ -38,7 +38,7 @@ class Journal2ebook:
         self.height = 600      # intended height, also could be set by gui
         self.width = None
         self.img = None
-        self.imgaspect = None # aspect ration of image
+        self.imgaspect = None # aspect ratio of image
         self.filename = None        
         self.filedir = None
         self.configFile = './journal2ebook.conf'
