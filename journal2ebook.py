@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import ImageTk
 import PIL.Image
 from Tkinter import *
@@ -49,6 +50,7 @@ class Journal2ebook:
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
             f.close()
         except IOError:
+            # instead of doing this, maybe the config file should be set up on install?
             self.profileDialog=Toplevel(self.parent)
 
             # Couldn't get this button box working.
@@ -69,10 +71,7 @@ class Journal2ebook:
             f=open(self.configFile,'r')
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
             f.close()
-
-        print "shit0"
         self.chooseImage()
-        print self.filename
         try:
             os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
@@ -204,15 +203,11 @@ class Journal2ebook:
         self.bInc.bind('<Button-1>', self.bIncClick)
 
     def chooseImage(self):
-        print "shitxxx"
         if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
             initdir = self.configVars['last_dir']+"/"
-            print initdir + "crap1"
         else:
             initdir = '~/'
-            print initdir + "crap2"
         self.filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
-        print "shityyy"
         self.filedir=os.path.dirname(self.filename) #directory
         self.filename=self.filename.rstrip('pdf')
         self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
@@ -231,7 +226,6 @@ class Journal2ebook:
         # Resize the image
         imFileName='temp-%s.png' % self.page
         imFile=os.path.join(self.filedir,'tempfiles',imFileName)
-        print imFile
         try:
             self.img = PIL.Image.open(imFile)
         except IOError:
@@ -293,13 +287,11 @@ class Journal2ebook:
         self.updateImage(event)
            
     def bNewFileClick(self,event):
-        newFilename=self.chooseImage(initdir=self.filedir)
-        if newFilename==():
+        oldImage=self.filename
+        self.chooseImage()  #changes self.filename
+        if self.filename==oldImage:
             pass  #don't do anything
         else:
-            self.filename=newFilename
-            self.filename=self.filename.rstrip('pdf')
-            self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
             self.cleanUp()
             self.canvas1.delete('all')
             self.convertImage()
@@ -315,7 +307,7 @@ class Journal2ebook:
             self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
 
     def saveProfile(self):
-        if 'profiles' not in self.configVars or self.configVars['profiles']=='None':
+        if ('profiles' not in self.configVars) or (self.configVars['profiles']=='None'):
             self.setupProfiles()
 
         self.saveProfileDialog=Toplevel(self.parent)
@@ -344,7 +336,7 @@ class Journal2ebook:
         msg=Message(self.profileDialog,text='This is your first time accessing profiles!\n\nProfiles allow you to save settings that work well for a particular journal or set of journals. \n\nTo begin, select the file in which to save your profile parameters:')
         msg.grid(row=0,column=0,sticky=W)
         fileBox=Entry(self.profileDialog,width=50,textvariable=self.fileBoxText)
-        self.fileBoxText.set('~/journal2ebook.txt')
+        self.fileBoxText.set('./journal2ebook.txt')
         fileBox.grid(row=1,column=0,sticky=W)
 
         bBrowse=Button(self.profileDialog)
@@ -368,7 +360,7 @@ class Journal2ebook:
    
     def profilesOK(self,event):
         self.configVars['profiles'] = self.fileBoxText.get()
-        print 'fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
+        print 'in profilesOK: fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
         self.saveConfig()
         #need to create the profiles file in stated location
         self.profileDialog.destroy()
@@ -407,7 +399,7 @@ class Journal2ebook:
         rightmargin=(1-self.scale4.get())*8.5/2.
         newFileName=asksaveasfilename(parent=root,filetypes=[('pdf','*.pdf'),('epub','*.epub')] ,title="Save the image as")
         if self.skipFirst.get()==1:
-            npages=len([f for f in glob.glob('*.png') if re.match('temp-',f)])
+            npages=len([f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))])
             pagerange='2-'+str(npages)
             subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,'"'+self.filename+'.pdf"'])
         else:

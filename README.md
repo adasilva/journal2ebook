@@ -1,35 +1,40 @@
 journal2ebook
 =============
 
-Application to convert academic pdfs to epub format for e-readers
+Graphical application to convert academic pdfs to epub format for
+e-readers using k2pdfopt as a backend.
 
-Allows you to set margins in a GUI using an image of the first page of
-your pdf. The resulting epub file is output to the folder you are
-running this app from.
+The GUI allows you to visualize your PDF and draw appropriate margins
+that will be passed to k2pdfopt. The resulting pdf file is output to
+the folder of your choice. There is also functionality to save and
+recall journal profiles that store margin values.
 
-This program works cross-platform (thus far Linux and Windows 7 have
-been tested). In all cases, ImageMagick and k2pdfopt must be in the
-system's search path.
+This program should work cross-platform (Linux, Mac, and Windows;
+though it has been most extensively tested with Linux). In any case,
+ImageMagick and k2pdfopt must be in your system's search PATH (or
+installed ot the journal2ebook directory). The following dependencies
+must also be met.
 
 Requires the following python modules:
 
-Python Imaging Library / ImageTk - to show an image of your pdf in the
-application 
-You may need to obtain PIL from http://www.pythonware.com/
+* Python Imaging Library / ImageTk - to show an image of your pdf in
+the application
 
-Tkinter - to make the GUI
-This seems to be included with python. 
+  You may need to obtain PIL from http://www.pythonware.com/
 
-os - to interface with the operating system
-Included with python.
 
-re - For some regex stuff
-Included with python.
+Dependencies that seem to be included with most installations of
+python:
 
-pdb
-
-glob
+* Tkinter - to make the GUI
+* os - to interface with the operating system
+* re - For some regex stuff
+* pdb
+* time
+* glob
+* subprocess
    
-Also depends on:
-imagemagick - to convert pdf to png 
-k2pdfopt - to convert pdf to epub
+Third party programs as backends:
+
+* imagemagick - to convert pdf to png 
+* k2pdfopt - to convert pdf to epub
