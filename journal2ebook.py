@@ -231,7 +231,6 @@ class Journal2ebook:
         # Resize the image
         imFileName='temp-%s.png' % self.page
         imFile=os.path.join(self.filedir,'tempfiles',imFileName)
-        print 'in prepImage: imFile=', imFile
         try:
             self.img = PIL.Image.open(imFile)
         except IOError:
@@ -293,13 +292,11 @@ class Journal2ebook:
         self.updateImage(event)
            
     def bNewFileClick(self,event):
-        newFilename=self.chooseImage()
-        if newFilename==():
+        oldImage=self.filename
+        self.chooseImage()  #changes self.filename
+        if self.filename==oldImage:
             pass  #don't do anything
         else:
-            self.filename=newFilename
-            self.filename=self.filename.rstrip('pdf')
-            self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
             self.cleanUp()
             self.canvas1.delete('all')
             self.convertImage()
@@ -407,7 +404,7 @@ class Journal2ebook:
         rightmargin=(1-self.scale4.get())*8.5/2.
         newFileName=asksaveasfilename(parent=root,filetypes=[('pdf','*.pdf'),('epub','*.epub')] ,title="Save the image as")
         if self.skipFirst.get()==1:
-            npages=len([f for f in glob.glob('*.png') if re.match('temp-',f)])
+            npages=len([f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))])
             pagerange='2-'+str(npages)
             subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,'"'+self.filename+'.pdf"'])
         else:
