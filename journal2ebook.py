@@ -110,13 +110,13 @@ class Journal2ebook:
         self.tools.add_command(label='Exit',command=lambda: self.bQuitClick(None))
 
         ### Row 0 is the left and right margin scale bars
-        self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.)
+        self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=14,length=self.width/2.+7,showvalue=0)
         self.scale2.grid(row=1,column=1,columnspan=2,sticky=W)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Right>',self.drawMargins)
 
-        self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.,showvalue=1.)
+        self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=14,length=self.width/2.+7,showvalue=0)
         self.scale4.grid(row=1,column=3,columnspan=2,sticky=E)
         self.scale4.set(1.)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
@@ -124,13 +124,13 @@ class Journal2ebook:
         self.scale4.bind('<KeyRelease-Right>',self.drawMargins)
 
         ### Columns 0 contains the top and bottom margins
-        self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.)
+        self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=14,length=self.height/2.+7,showvalue=0)
         self.scale1.grid(row=2,column=0,sticky=NW)
         self.scale1.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Up>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Down>',self.drawMargins)
 
-        self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.)
+        self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=14,length=self.height/2.+7,showvalue=0)
         self.scale3.grid(row=4,column=0,sticky=SW)
         self.scale3.set(1.)
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
@@ -261,13 +261,13 @@ class Journal2ebook:
         self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
         
     def drawMargins(self,event):
-        cl=self.scale1.get()*self.height/2.
+        cl=self.scale1.get()*(self.height/2.-9)
         self.canvas1.coords(self.left,0,cl,self.width,cl)
-        cr=self.height/2.+self.scale3.get()*self.height/2.
+        cr=self.height/2.+9+self.scale3.get()*(self.height/2.-7)
         self.canvas1.coords(self.right,0,cr,self.width,cr)
-        ct=self.scale2.get()*self.width/2.
+        ct=self.scale2.get()*(self.width/2.-9)
         self.canvas1.coords(self.top,ct,0,ct,self.height)
-        cb=self.width/2.+self.scale4.get()*self.width/2.
+        cb=self.width/2.+9+self.scale4.get()*(self.width/2.-7)
         self.canvas1.coords(self.bottom,cb,0,cb,self.height)
         
     def cleanUp(self):
