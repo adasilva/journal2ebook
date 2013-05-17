@@ -95,7 +95,7 @@ class Journal2ebook:
         
         # Set up a menu bar with Tools.
         self.fMenu=Frame(self.parent, relief='groove')
-        self.fMenu.grid(row=0,column=0,columnspan=5)
+        self.fMenu.grid(row=0,column=0,columnspan=4)
 
         self.menubar=Menu(self.parent) #menubar
         self.parent.config(menu=self.menubar) #configuration
@@ -111,13 +111,13 @@ class Journal2ebook:
 
         ### Row 0 is the left and right margin scale bars
         self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=14,length=self.width/2.+7,showvalue=0)
-        self.scale2.grid(row=1,column=1,columnspan=2,sticky=W)
+        self.scale2.grid(row=1,column=1,sticky=W)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Right>',self.drawMargins)
 
         self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=14,length=self.width/2.+7,showvalue=0)
-        self.scale4.grid(row=1,column=3,columnspan=2,sticky=E)
+        self.scale4.grid(row=1,column=3,sticky=E)
         self.scale4.set(1.)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale4.bind('<KeyRelease-Left>',self.drawMargins)
@@ -151,13 +151,16 @@ class Journal2ebook:
         self.top=self.canvas1.create_line(0,0,0,self.width)
         self.bottom=self.canvas1.create_line(0,self.height,self.width,self.height)
         
+        ### Create a frame on the side for extras
+        self.fExtras=Frame(self.parent)
+
         ### Some extra options in last column
-        self.bSkipFirst=Checkbutton(self.parent,text='Skip first page',variable=self.skipFirst)
-        self.bSkipFirst.grid(row=2,column=5,sticky=NW)
+        self.bSkipFirst=Checkbutton(self.fExtras,text='Skip first page',variable=self.skipFirst)
+        self.bSkipFirst.grid(row=0,column=0,sticky=NW)
 
         ### Profiles list box
-        self.lProfiles=Listbox(self.parent)
-        self.lProfiles.grid(row=2,column=5,sticky=SW)
+        self.lProfiles=Listbox(self.fExtras)
+        self.lProfiles.grid(row=1,column=0,sticky=SW)
         self.lProfiles.bind('<<ListboxSelect>>',self.chooseProfile)
 
         if 'profiles' in self.configVars and self.configVars['profiles']!='None':
@@ -170,36 +173,43 @@ class Journal2ebook:
         for i in range(len(self.profileList)):
             self.lProfiles.insert(END,self.profileList[i][0])
 
-        ### Quit and save buttons in the bottom row
-        self.bNewFile=Button(self.parent, text='new file',background='#8C99DF')
-        self.bNewFile.grid(row=6,column=0,sticky=W)
+
+        ### Quit and save buttons on the side
+        self.bNewFile=Button(self.fExtras, text='new file',background='#8C99DF')
+        self.bNewFile.grid(row=2,column=0,sticky=W+E)
         self.bNewFile.bind('<Button-1>',self.bNewFileClick)
         self.bNewFile.bind('<Return>',self.bNewFileClick)
 
-        self.bReady=Button(self.parent, text='Ready!', background='#8C99DF')
-        self.bReady.grid(row=6,column=4,sticky=E+W)
+        self.bReady=Button(self.fExtras, text='Ready!', background='#8C99DF')
+        self.bReady.grid(row=3,column=0,sticky=W+E)
         self.bReady.focus_force()  #Force focus to be on button1 on start
         self.bReady.bind('<Button-1>',self.bReadyClick)
         self.bReady.bind('<Return>',self.bReadyClick)
         
-        self.bQuit=Button(self.parent)
+        self.bQuit=Button(self.fExtras)
         self.bQuit.configure(text='Quit',background='#8C99DF')
-        self.bQuit.grid(row=6,column=5,sticky=W+E)
+        self.bQuit.grid(row=4,column=0,sticky=W+E)
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
-        self.bDec=Button(self.parent)
+        self.fExtras.grid(row=1,column=4,rowspan=6)
+
+        ### Page increment buttons within a frame (for centering purposes)
+        self.fPageChange=Frame(self.parent)
+        self.fPageChange.grid(row=6,column=1,columnspan=4)
+
+        self.bDec=Button(self.fPageChange)
         self.bDec.configure(text='<',background='blue')
-        self.bDec.grid(row=6,column=2, sticky=W)
+        self.bDec.grid(row=0,column=1, sticky=W)
         self.bDec.bind('<Button-1>', self.bDecClick)
         
-        self.pageEntry = Entry(self.parent,textvariable=self.pageString,width=4)
-        self.pageEntry.grid(row=6,column=2)
+        self.pageEntry = Entry(self.fPageChange,textvariable=self.pageString,width=4)
+        self.pageEntry.grid(row=0,column=2)
         self.pageEntry.bind('<Return>',self.updateImage)
 
-        self.bInc=Button(self.parent)
+        self.bInc=Button(self.fPageChange)
         self.bInc.configure(text='>',background='blue')
-        self.bInc.grid(row=6,column=2, sticky=E)
+        self.bInc.grid(row=0,column=3, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
 
     def chooseImage(self):
