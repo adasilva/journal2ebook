@@ -3,6 +3,7 @@ import ImageTk
 import PIL.Image
 from Tkinter import *
 from tkFileDialog import askopenfilename,asksaveasfilename
+import tkMessageBox
 import os
 import re
 import pdb
@@ -51,18 +52,7 @@ class Journal2ebook:
             f.close()
         except IOError:
             # instead of doing this, maybe the config file should be set up on install?
-            self.profileDialog=Toplevel(self.parent)
-
-            # Couldn't get this button box working.
-            # msg=Message(self.profileDialog,text='No configuration file found. A new configuration file has been created for you.')
-            # msg.grid(row=0,column=0,sticky=W)
-
-            # bOK=Button(self.profileDialog)
-            # bOK.configure(text='OK')
-            # bOK.focus_force()
-            # bOK.bind('<Button-1>',self.parent.destroy)
-            # bOK.bind('<Return>',self.parent.destroy)
-            # bOK.grid(row=1,column=0)
+            self.profileDialog=tkMessageBox.showinfo('Info','No configuration file found.\nA new configuration file has been created for you.')
 
             file = open(self.configFile, 'w')
             file.write('')
