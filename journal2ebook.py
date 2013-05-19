@@ -100,13 +100,13 @@ class Journal2ebook:
         self.tools.add_command(label='Exit',command=lambda: self.bQuitClick(None))
 
         ### Row 1 is the left and right margin scale bars
-        self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=14,length=self.width/2.+7,showvalue=0)
+        self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
         self.scale2.grid(row=1,column=1,sticky=W)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Right>',self.drawMargins)
 
-        self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=14,length=self.width/2.+7,showvalue=0)
+        self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
         self.scale4.grid(row=1,column=2,sticky=E)
         self.scale4.set(1.)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
@@ -114,14 +114,14 @@ class Journal2ebook:
         self.scale4.bind('<KeyRelease-Right>',self.drawMargins)
 
         ### Columns 0 contains the top and bottom margins
-        self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=14,length=self.height/2.+7,showvalue=0)
+        self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
         self.scale1.grid(row=2,column=0,sticky=NW)
         self.scale1.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Up>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Down>',self.drawMargins)
 
-        self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=14,length=self.height/2.+7,showvalue=0)
-        self.scale3.grid(row=4,column=0,sticky=SW)
+        self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
+        self.scale3.grid(row=3,column=0,sticky=SW)
         self.scale3.set(1.)
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale3.bind('<KeyRelease-Up>',self.drawMargins)
@@ -129,7 +129,7 @@ class Journal2ebook:
 
         ### The canvas to show the image and margin lines spans 4 grid segments
         self.canvas1=Canvas(self.parent,width=self.width,height=self.height)   
-        self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=4)
+        self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=2,sticky=NW,padx=7,pady=7)
 
         ### Draw the pdf on the canvas        
         # Display image
@@ -143,11 +143,11 @@ class Journal2ebook:
         
         ### Create a frame on the side for extras
         self.fExtras=Frame(self.parent)
-        self.fExtras.grid(row=2,column=3,rowspan=5)
+        self.fExtras.grid(row=2,column=3,rowspan=3,sticky=N+S)
 
         ### Some extra options in last column
         self.bSkipFirst=Checkbutton(self.fExtras,text='Skip first page',variable=self.skipFirst)
-        self.bSkipFirst.grid(row=0,column=0,sticky=NW)
+        self.bSkipFirst.grid(row=0,column=0,sticky=N)
 
         ### Profiles list box
         self.lProfiles=Listbox(self.fExtras)
@@ -167,25 +167,25 @@ class Journal2ebook:
 
         ### Quit and save buttons on the side
         self.bNewFile=Button(self.fExtras, text='new file',background='#8C99DF')
-        self.bNewFile.grid(row=2,column=0,sticky=SW+SE)
+        self.bNewFile.grid(row=2,column=0,sticky=W+E)
         self.bNewFile.bind('<Button-1>',self.bNewFileClick)
         self.bNewFile.bind('<Return>',self.bNewFileClick)
 
         self.bReady=Button(self.fExtras, text='Ready!', background='#8C99DF')
-        self.bReady.grid(row=3,column=0,sticky=SW+SE)
+        self.bReady.grid(row=3,column=0,sticky=W+E)
         self.bReady.focus_force()  #Force focus to be on button1 on start
         self.bReady.bind('<Button-1>',self.bReadyClick)
         self.bReady.bind('<Return>',self.bReadyClick)
         
         self.bQuit=Button(self.fExtras)
         self.bQuit.configure(text='Quit',background='#8C99DF')
-        self.bQuit.grid(row=4,column=0,sticky=SW+SE)
+        self.bQuit.grid(row=4,column=0,sticky=SE+SW)
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
         ### Page increment buttons within a frame (for centering purposes)
         self.fPageChange=Frame(self.parent)
-        self.fPageChange.grid(row=6,column=1,columnspan=2)
+        self.fPageChange.grid(row=4,column=1,columnspan=2)
 
         self.bDec=Button(self.fPageChange)
         self.bDec.configure(text='<',background='blue')
@@ -260,13 +260,15 @@ class Journal2ebook:
         self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
         
     def drawMargins(self,event):
-        cl=self.scale1.get()*(self.height/2.-9)
+        d=7.  #half of the slider length
+        g=5   #padding between sliders
+        cl=self.scale1.get()*(self.height/2.-d)
         self.canvas1.coords(self.left,0,cl,self.width,cl)
-        cr=self.height/2.+9+self.scale3.get()*(self.height/2.-7)
+        cr=self.height/2.+d+g+self.scale3.get()*(self.height/2.-d-g)
         self.canvas1.coords(self.right,0,cr,self.width,cr)
-        ct=self.scale2.get()*(self.width/2.-9)
+        ct=self.scale2.get()*(self.width/2.-d)
         self.canvas1.coords(self.top,ct,0,ct,self.height)
-        cb=self.width/2.+9+self.scale4.get()*(self.width/2.-7)
+        cb=self.width/2.+d+g+self.scale4.get()*(self.width/2.-d-g)
         self.canvas1.coords(self.bottom,cb,0,cb,self.height)
         
     def cleanUp(self):
