@@ -37,6 +37,7 @@ class Journal2ebook:
         self.pageString.set(self.page+1)
         self.maxPages = None
         self.skipFirst = IntVar()
+        self.ncols = IntVar()
         self.height = 600      # intended height, also could be set by gui
         self.width = None
         self.img = None
@@ -81,7 +82,7 @@ class Journal2ebook:
         self.prepImage()
 
         ### Application uses the grid geometry management
-        # currently the size is 7 rows x 5 columns
+        # currently the size is 5 rows x 4 columns
         
         # Set up a menu bar with Tools.
         self.fMenu=Frame(self.parent, relief='groove')
@@ -143,15 +144,18 @@ class Journal2ebook:
         
         ### Create a frame on the side for extras
         self.fExtras=Frame(self.parent)
-        self.fExtras.grid(row=2,column=3,rowspan=3,sticky=N+S)
+        self.fExtras.grid(row=2,column=3,sticky=N+S)
 
         ### Some extra options in last column
         self.bSkipFirst=Checkbutton(self.fExtras,text='Skip first page',variable=self.skipFirst)
-        self.bSkipFirst.grid(row=0,column=0,sticky=N)
+        self.bSkipFirst.grid(row=0,column=0,sticky=NW)
+
+        self.bXtracols=Checkbutton(self.fExtras,text='3 or 4 columns',variable=self.ncols)
+        self.bXtracols.grid(row=1,column=0,sticky=NW)
 
         ### Profiles list box
         self.lProfiles=Listbox(self.fExtras)
-        self.lProfiles.grid(row=1,column=0,sticky=SW)
+        self.lProfiles.grid(row=2,column=0,sticky=SW)
         self.lProfiles.bind('<<ListboxSelect>>',self.chooseProfile)
 
         if 'profiles' in self.configVars and self.configVars['profiles']!='None':
@@ -166,20 +170,22 @@ class Journal2ebook:
 
 
         ### Quit and save buttons on the side
-        self.bNewFile=Button(self.fExtras, text='new file',background='#8C99DF')
-        self.bNewFile.grid(row=2,column=0,sticky=W+E)
+        self.fButtons=Frame(self.parent)
+        self.fButtons.grid(row=3,column=3,sticky=S)
+        self.bNewFile=Button(self.fButtons, text='new file',background='#8C99DF')
+        self.bNewFile.grid(row=0,column=0,sticky=E+W)
         self.bNewFile.bind('<Button-1>',self.bNewFileClick)
         self.bNewFile.bind('<Return>',self.bNewFileClick)
 
-        self.bReady=Button(self.fExtras, text='Ready!', background='#8C99DF')
-        self.bReady.grid(row=3,column=0,sticky=W+E)
+        self.bReady=Button(self.fButtons, text='Ready!', background='#8C99DF')
+        self.bReady.grid(row=1,column=0,sticky=E+W)
         self.bReady.focus_force()  #Force focus to be on button1 on start
         self.bReady.bind('<Button-1>',self.bReadyClick)
         self.bReady.bind('<Return>',self.bReadyClick)
         
-        self.bQuit=Button(self.fExtras)
+        self.bQuit=Button(self.fButtons)
         self.bQuit.configure(text='Quit',background='#8C99DF')
-        self.bQuit.grid(row=4,column=0,sticky=SE+SW)
+        self.bQuit.grid(row=2,column=0,sticky=E+W)
         self.bQuit.bind('<Button-1>',self.bQuitClick)
         self.bQuit.bind('<Return>',self.bQuitClick)
 
@@ -373,7 +379,7 @@ class Journal2ebook:
         f.close()
         
     def addProfile(self,profileName):
-        newProfile=[profileName,self.skipFirst.get(),self.scale1.get(),self.scale2.get(),self.scale3.get(),self.scale4.get()]
+        newProfile=[profileName,self.skipFirst.get(),self.ncols.get(),self.scale1.get(),self.scale2.get(),self.scale3.get(),self.scale4.get()]
         self.profileList.append(newProfile)
         f=open(self.configVars['profiles'],'a+') #'a+' to append at the end of file
         profileStr=newProfile[0]
@@ -387,10 +393,11 @@ class Journal2ebook:
     def chooseProfile(self,event):
         i=int(event.widget.curselection()[0])
         self.skipFirst.set(self.profileList[i][1])
-        self.scale1.set(self.profileList[i][2])
-        self.scale2.set(self.profileList[i][3])
-        self.scale3.set(self.profileList[i][4])
-        self.scale4.set(self.profileList[i][5])
+        self.ncols.set(self.profileList[i][2])
+        self.scale1.set(self.profileList[i][3])
+        self.scale2.set(self.profileList[i][4])
+        self.scale3.set(self.profileList[i][5])
+        self.scale4.set(self.profileList[i][6])
         self.drawMargins(event)
         
     def bReadyClick(self,event):
@@ -399,12 +406,16 @@ class Journal2ebook:
         bottommargin=(1-self.scale3.get())*11/2.
         rightmargin=(1-self.scale4.get())*8.5/2.
         newFileName=asksaveasfilename(parent=root,filetypes=[('pdf','*.pdf'),('epub','*.epub')] ,title="Save the image as")
+        if self.ncols==0:
+            n=2
+        else:
+            n=4
         if self.skipFirst.get()==1:
             npages=len([f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))])
             pagerange='2-'+str(npages)
-            subprocess.call(['k2pdfopt','-x', '-p', pagerange,'-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,'"'+self.filename+'.pdf"'])
+            subprocess.call(['k2pdfopt','-x', '-p', pagerange, '-col', str(n), '-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o',newFileName,'"'+self.filename+'.pdf"'])
         else:
-            subprocess.call(['k2pdfopt','-x','-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o', newFileName, '"'+self.filename+'.pdf"'])
+            subprocess.call(['k2pdfopt','-x','-col', str(n), '-ml', str(leftmargin), '-mr', str(rightmargin), '-mt', str(topmargin), '-mb', str(bottommargin), '-ui-','-o', newFileName, '"'+self.filename+'.pdf"'])
 
     def bQuitClick(self,event):
         self.cleanUp()
