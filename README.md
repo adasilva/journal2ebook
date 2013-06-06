@@ -15,17 +15,39 @@ ImageMagick and k2pdfopt must be in your system's search PATH (or
 installed ot the journal2ebook directory). The following dependencies
 must also be met.
 
-Requires the following python modules:
-
+Linux / Mac Users
+-----------------
 * Python Imaging Library / ImageTk - to show an image of your pdf in
 the application
 
   You may need to obtain PIL from http://www.pythonware.com/
 
+Third party programs as backends:
+
+* imagemagick - to convert pdf to png 
+* k2pdfopt - to convert pdf to epub
+
+
+Windows
+-------
+* Python Imaging Library / ImageTk - to show an image of your pdf in
+the application
+
+  You may need to obtain PIL from http://www.pythonware.com/
+
+*ghostscript - to convert pdf to png
+
+  (http://sourceforge.net/projects/ghostscript/)
+
+Third party programs as backends:
+
+* imagemagick - to convert pdf to png 
+* k2pdfopt - to convert pdf to epub
+
 
 Dependencies that seem to be included with most installations of
 python:
-
+----------------------------------------------------------------
 * Tkinter - to make the GUI
 * os - to interface with the operating system
 * re - For some regex stuff
@@ -33,8 +55,4 @@ python:
 * time
 * glob
 * subprocess
-   
-Third party programs as backends:
-
-* imagemagick - to convert pdf to png 
-* k2pdfopt - to convert pdf to epub
+  

@@ -44,7 +44,7 @@ class Journal2ebook:
         self.imgaspect = None # aspect ratio of image
         self.filename = None        
         self.filedir = None
-        self.configFile = './journal2ebook.conf'
+        self.configFile = 'journal2ebook.conf'
         
         # configuration file
         try:
@@ -223,7 +223,7 @@ class Journal2ebook:
     def convertImage(self):
         # First, convert pdf to png
         imFile=os.path.join(self.filedir,'tempfiles','temp.png')
-        subprocess.call(['convert', self.filename+'.pdf', imFile])
+        subprocess.call(['convert', self.filename+'.pdf', imFile], shell=True)
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
         
