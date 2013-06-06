@@ -45,9 +45,12 @@ Third party programs as backends:
 * k2pdfopt - to convert pdf to epub
 
 
+
 Dependencies that seem to be included with most installations of
-python:
 ----------------------------------------------------------------
+python:
+-------
+
 * Tkinter - to make the GUI
 * os - to interface with the operating system
 * re - For some regex stuff
