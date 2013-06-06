@@ -46,10 +46,8 @@ Third party programs as backends:
 
 
 
-Dependencies that seem to be included with most installations of
-----------------------------------------------------------------
-python:
--------
+Dependencies that seem to be included with most installations of python:
+------------------------------------------------------------------------
 
 * Tkinter - to make the GUI
 * os - to interface with the operating system
