@@ -46,11 +46,16 @@ class Journal2ebook:
         self.filename = None        
         self.filedir = None
         self.configFile = 'journal2ebook.conf'
+        self.configVars={}
         
         # configuration file
         try:
             f=open(self.configFile,'r')
-            self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
+            for line in f:
+                if line.strip()!='':
+                    self.configVars[line.split(':')[0].replace(' ','')]=line.split(':')[1].strip() #dictionary of configuration variables
+                else:
+                    pass
             f.close()
         except IOError:
             # instead of doing this, maybe the config file should be set up on install?
