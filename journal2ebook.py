@@ -65,7 +65,6 @@ class Journal2ebook:
             f.close()
         self.chooseImage()
         try:
-            pdb.set_trace()
             os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
         except OSError:
@@ -225,7 +224,10 @@ class Journal2ebook:
     def convertImage(self):
         # First, convert pdf to png
         imFile=os.path.join(self.filedir,'tempfiles','temp.png')
-        subprocess.call(['convert', self.filename+'.pdf', imFile,shell=platform.system()=='Windows'])
+        if platform.system()=='Windows':
+            subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
+        else:
+            subprocess.call(['convert', self.filename+'.pdf', imFile])
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
         
