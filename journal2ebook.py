@@ -103,7 +103,7 @@ class Journal2ebook:
         self.menubar.add_cascade(label='Tools',menu=self.tools)
         # Add tools to the menu
         self.tools.add_command(label='Save Profile',command=self.saveProfile)
-        #self.menubar.add_command(label='Choose Profile')
+        self.tools.add_command(label='Update Selected Profile',command=self.editProfile)
         self.tools.add_command(label='Exit',command=lambda: self.bQuitClick(None))
 
         ### Row 1 is the left and right margin scale bars
@@ -398,6 +398,22 @@ class Journal2ebook:
         f.close()
         self.lProfiles.insert(END,profileName) 
         self.saveProfileDialog.destroy()
+
+    def editProfile(self):
+        try:
+            i=int(self.lProfiles.curselection()[0])
+            self.profileList[i][1:len(self.profileList[i])]=[self.skipFirst.get(),self.ncols.get(),self.scale1.get(),self.scale2.get(),self.scale3.get(),self.scale4.get()]
+            with open(self.configVars['profiles'],'w') as f:
+                for i in range(len(self.profileList)):
+                    profile=self.profileList[i]
+                    profileStr=profile[0]
+                    for j in range(1,len(profile)):
+                        profileStr=profileStr+','+str(profile[j])
+                    f.write(profileStr+'\n')
+        except:
+            tkMessageBox.showinfo('Info','''No selection was made.
+
+To update a profile, first select it from the menu. Make your changes within the main window. Then use "Update Selected Profile" from the Tools menu.''')
 
     def chooseProfile(self,event):
         i=int(event.widget.curselection()[0])
