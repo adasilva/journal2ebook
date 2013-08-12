@@ -6,7 +6,7 @@ from tkFileDialog import askopenfilename,asksaveasfilename
 import tkMessageBox
 import os
 import re
-import pdb
+#import pdb
 import time
 import glob
 import subprocess
