@@ -80,6 +80,8 @@ class Journal2ebook:
         else:
             self.setup()
 
+        
+
     def setup(self):
         '''Sets up the main window.'''
         ### Loading and preparing the image. This is done first
@@ -119,7 +121,7 @@ class Journal2ebook:
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale4.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale4.bind('<KeyRelease-Right>',self.drawMargins)
-
+        
         ### Columns 0 contains the top and bottom margins
         self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
         self.scale1.grid(row=2,column=0,sticky=NW)
@@ -136,7 +138,7 @@ class Journal2ebook:
 
         ### The canvas to show the image and margin lines spans 4 grid segments
         self.canvas1=Canvas(self.parent,width=self.width,height=self.height)   
-        self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=2,sticky=NW,padx=7,pady=7)
+        self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=2,sticky=(N,S,E,W),padx=7,pady=7)
 
         ### Draw the pdf on the canvas        
         # Display image
@@ -213,6 +215,21 @@ class Journal2ebook:
         self.bInc.grid(row=0,column=2, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
 
+        # Setup re-sizing
+        # If new rows/columns are added, need to add new lines here.
+        self.parent.rowconfigure(0,weight=0)
+        self.parent.rowconfigure(1,weight=0)
+        self.parent.rowconfigure(2,weight=1)
+        self.parent.rowconfigure(3,weight=1)
+        self.parent.rowconfigure(4,weight=0)
+        self.parent.columnconfigure(0,weight=0)
+        self.parent.columnconfigure(1,weight=1)
+        self.parent.columnconfigure(2,weight=1)
+        self.parent.columnconfigure(3,weight=0)
+        
+        self.canvas1.bind('<Configure>',self.resizeImage)
+        #self.parent.bind('<Configure>',self.resizeImage)
+
     def chooseImage(self):
         if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
             initdir = self.configVars['last_dir']+"/"
@@ -269,10 +286,35 @@ class Journal2ebook:
         self.top=self.canvas1.create_line(ct,0,ct,self.height)
         cb=self.width/2.+self.scale4.get()*self.width/2.
         self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
+
+    def resizeImage(self,event):
+        self.canvas1.delete('all')
+        oldheight=self.height
+        oldwidth=self.width
+        if self.canvas1.winfo_height()*self.imgaspect < self.canvas1.winfo_width():
+            self.height=self.canvas1.winfo_height()
+            self.width = int(self.height * self.imgaspect)
+        else:
+            self.width=self.canvas1.winfo_width()
+            self.height = int(1.0*self.width/self.imgaspect)
+
+        self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
+        self.previewImg=ImageTk.PhotoImage(self.img)
+        self.canvas1.create_image(self.width/2.,self.height/2.,image=self.previewImg)
+        cl=self.scale1.get()*self.height/2.
+        self.left=self.canvas1.create_line(0,cl,self.width,cl)
+        cr=self.height/2.+self.scale3.get()*self.height/2.
+        self.right=self.canvas1.create_line(0,cr,self.width,cr)
+        ct=self.scale2.get()*self.width/2.
+        self.top=self.canvas1.create_line(ct,0,ct,self.height)
+        cb=self.width/2.+self.scale4.get()*self.width/2.
+        self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
+
+        
         
     def drawImage(self):
-        self.img=ImageTk.PhotoImage(self.img)
-        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
+        self.previewImg=ImageTk.PhotoImage(self.img)
+        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.previewImg)
         
     def drawMargins(self,event):
         d=7.  #half of the slider length
@@ -449,5 +491,7 @@ To update a profile, first select it from the menu. Make your changes within the
 if __name__ == '__main__':
     root=Tk()
     root.wm_title('journal2ebook')
+    root.columnconfigure(0,weight=1)
+    root.rowconfigure(0,weight=1)
     myapp=Journal2ebook(root)
     root.mainloop()
