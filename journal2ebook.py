@@ -41,7 +41,9 @@ class Journal2ebook:
         self.ncols = IntVar()
         self.height = 600      # intended height, also could be set by gui
         self.width = None
-        self.img = None
+        self.rawImg = None  # Image before resizing image
+        self.img = None   # Resized image
+        self.tkImg = None   # Tk photoimage instance
         self.imgaspect = None # aspect ratio of image
         self.filename = None        
         self.filedir = None
@@ -258,15 +260,15 @@ class Journal2ebook:
         imFileName='temp-%s.png' % self.page
         imFile=os.path.join(self.filedir,'tempfiles',imFileName)
         try:
-            self.img = PIL.Image.open(imFile)
+            self.rawImg = PIL.Image.open(imFile)
         except IOError:
             try:
-                self.img = PIL.Image.open(os.path.join(self.filedir,'tempfiles','temp.png'))
+                self.rawImg = PIL.Image.open(os.path.join(self.filedir,'tempfiles','temp.png'))
             except IOError as detail:
                 print 'Couldn\'t load file: ', detail
-        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
+        self.imgaspect = float(self.rawImg.size[0]) / float(self.rawImg.size[1])
         self.width = int(self.height * self.imgaspect)
-        self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
+        self.img = self.rawImg.resize((self.width, self.height), PIL.Image.ANTIALIAS)
 
     def updateImage(self,event):
         if int(self.pageString.get()) > self.maxPages:
@@ -289,8 +291,8 @@ class Journal2ebook:
 
     def resizeImage(self,event):
         self.canvas1.delete('all')
-        oldheight=self.height
-        oldwidth=self.width
+        #oldheight=self.height
+        #oldwidth=self.width
         if self.canvas1.winfo_height()*self.imgaspect < self.canvas1.winfo_width():
             self.height=self.canvas1.winfo_height()
             self.width = int(self.height * self.imgaspect)
@@ -298,9 +300,9 @@ class Journal2ebook:
             self.width=self.canvas1.winfo_width()
             self.height = int(1.0*self.width/self.imgaspect)
 
-        self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
-        self.previewImg=ImageTk.PhotoImage(self.img)
-        self.canvas1.create_image(self.width/2.,self.height/2.,image=self.previewImg)
+        self.img = self.rawImg.resize((self.width, self.height), PIL.Image.ANTIALIAS)
+        self.tkImg=ImageTk.PhotoImage(self.img)
+        self.canvas1.create_image(self.width/2.,self.height/2.,image=self.tkImg)
         cl=self.scale1.get()*self.height/2.
         self.left=self.canvas1.create_line(0,cl,self.width,cl)
         cr=self.height/2.+self.scale3.get()*self.height/2.
@@ -313,8 +315,8 @@ class Journal2ebook:
         
         
     def drawImage(self):
-        self.previewImg=ImageTk.PhotoImage(self.img)
-        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.previewImg)
+        self.tkImg=ImageTk.PhotoImage(self.img)
+        self.canvas1.create_image(self.width/2.,self.height/2.,image=self.tkImg)
         
     def drawMargins(self,event):
         d=7.  #half of the slider length
@@ -347,8 +349,8 @@ class Journal2ebook:
     def bNewFileClick(self,event):
         oldImage=self.filename
         self.chooseImage()  #changes self.filename
-        if self.filename==oldImage:
-            pass  #don't do anything
+        if self.filename==oldImage: #do nothing if filename didn't change
+            pass
         else:
             self.cleanUp()
             self.canvas1.delete('all')
