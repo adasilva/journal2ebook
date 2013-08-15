@@ -9,9 +9,9 @@ that will be passed to k2pdfopt. The resulting pdf file is output to
 the folder of your choice. There is also functionality to save and
 recall journal profiles that store margin values.
 
-This program should work cross-platform (Linux, Mac, and Windows;
-though it has been most extensively tested with Linux). In any case,
-ImageMagick and k2pdfopt must be in your system's search PATH (or
+This program should work cross-platform (Linux, Mac, and Windows) though it has been most extensively tested with Linux. The Windows executable is usually behind in features, but is the most recent version that has been tested in Windows. We do not currently test on Mac.
+
+For any OS, ImageMagick and k2pdfopt must be in your system's search PATH (or
 installed ot the journal2ebook directory). The dependencies listed in the folloing sections must also be met.
 
 Linux / Mac Users
@@ -30,8 +30,13 @@ Third party programs as backends:
 
 Two ways to run this software:
 
-* Double click on journal2ebook.py (if it doesn't work, check that the file is executable)
-* Run from the terminal: python journal2ebook.py
+* Double click on journal2ebook.py 
+
+  (if it doesn't work, check that the file is executable)
+
+* Run from the terminal: 
+
+  python journal2ebook.py
 
 
 Windows
@@ -41,7 +46,7 @@ the application
 
   You may need to obtain PIL from http://www.pythonware.com/
 
-*ghostscript - to convert pdf to png
+* ghostscript - to convert pdf to png
 
   (http://sourceforge.net/projects/ghostscript/)
 
