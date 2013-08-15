@@ -30,9 +30,8 @@ Third party programs as backends:
 
 Two ways to run this software:
 
-* Double click on the file (if it doesn't work, check that the file is executable)
-* Run from the terminal
-  python journal2epub.py
+* Double click on journal2ebook.py (if it doesn't work, check that the file is executable)
+* Run from the terminal: python journal2ebook.py
 
 
 Windows
