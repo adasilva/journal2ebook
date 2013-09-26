@@ -110,14 +110,17 @@ class Journal2ebook:
         self.tools.add_command(label='Update Selected Profile',command=self.editProfile)
         self.tools.add_command(label='Exit',command=lambda: self.bQuitClick(None))
 
+        self.fPreview=Frame(self.parent)
+        self.fPreview.grid(row=1,column=0,rowspan=3,columnspan=3)
+
         ### Row 1 is the left and right margin scale bars
-        self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
+        self.scale2=Scale(self.fPreview,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
         self.scale2.grid(row=1,column=1,sticky=W)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Right>',self.drawMargins)
 
-        self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
+        self.scale4=Scale(self.fPreview,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
         self.scale4.grid(row=1,column=2,sticky=E)
         self.scale4.set(1.)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
@@ -125,13 +128,13 @@ class Journal2ebook:
         self.scale4.bind('<KeyRelease-Right>',self.drawMargins)
         
         ### Columns 0 contains the top and bottom margins
-        self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
+        self.scale1=Scale(self.fPreview,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
         self.scale1.grid(row=2,column=0,sticky=NW)
         self.scale1.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Up>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Down>',self.drawMargins)
 
-        self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
+        self.scale3=Scale(self.fPreview,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
         self.scale3.grid(row=3,column=0,sticky=SW)
         self.scale3.set(1.)
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
@@ -139,7 +142,7 @@ class Journal2ebook:
         self.scale3.bind('<KeyRelease-Down>',self.drawMargins)
 
         ### The canvas to show the image and margin lines spans 4 grid segments
-        self.canvas1=Canvas(self.parent,width=self.width,height=self.height)   
+        self.canvas1=Canvas(self.fPreview,width=self.width,height=self.height)  
         self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=2,sticky=(N,S,E,W),padx=7,pady=7)
 
         ### Draw the pdf on the canvas        
@@ -252,6 +255,7 @@ class Journal2ebook:
             subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
         else:
             subprocess.call(['convert', self.filename+'.pdf', imFile])
+            
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
         
@@ -353,6 +357,12 @@ class Journal2ebook:
             pass
         else:
             self.cleanUp()
+            try:
+                os.mkdir(os.path.join(self.filedir,'tempfiles'))
+                self.tempdirexists=False
+            except OSError:
+                self.tempdirexists=True
+
             self.canvas1.delete('all')
             self.convertImage()
             self.prepImage()
