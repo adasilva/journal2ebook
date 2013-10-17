@@ -252,7 +252,7 @@ class Journal2ebook:
         # First, convert pdf to png
         imFile=os.path.join(self.filedir,'tempfiles','temp.png')
         if platform.system()=='Windows':
-            subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
+            subprocess.call(['convert', self.filename+'.pdf', imFile],shell=True)
         else:
             subprocess.call(['convert', self.filename+'.pdf', imFile])
             
