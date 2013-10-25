@@ -245,13 +245,17 @@ class Journal2ebook:
             initdir = self.configVars['last_dir']+"/"
         else:
             initdir = '~/'
-        self.filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
-        self.filedir=os.path.dirname(self.filename) #directory
-        self.filename=self.filename.rstrip('pdf')
-        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
-        if self.filedir:            
-            self.configVars['last_dir'] = self.filedir
-            self.saveConfig()
+        newfilename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
+        if newfilename==():  #This happens if Cancel button is pressed
+            pass
+        else:
+            self.filename = newfilename 
+            self.filedir=os.path.dirname(self.filename) #directory
+            self.filename=self.filename.rstrip('pdf')
+            self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
+            if self.filedir:            
+                self.configVars['last_dir'] = self.filedir
+                self.saveConfig()
 
     def convertImage(self):
         # First, convert pdf to png
