@@ -6,7 +6,6 @@ from tkFileDialog import askopenfilename,asksaveasfilename
 import tkMessageBox
 import os
 import re
-#import pdb
 import time
 import glob
 import subprocess
@@ -72,10 +71,16 @@ class Journal2ebook:
             f.close()
         self.chooseImage()
         try:
-            os.mkdir(os.path.join(self.filedir,'tempfiles'))
+            os.mkdir(os.path.join(os.environ['HOME'],'tmp'))
             self.tempdirexists=False
         except OSError:
             self.tempdirexists=True
+
+        try:
+            os.mkdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))
+        except OSError:
+            self.cleanUp()
+            os.mkdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))
 
         if self.filename=='':
             self.parent.destroy()
@@ -250,24 +255,24 @@ class Journal2ebook:
 
     def convertImage(self):
         # First, convert pdf to png
-        imFile=os.path.join(self.filedir,'tempfiles','temp.png')
+        imFile=os.path.join(os.environ['HOME'],'tmp','j2ebook','temp.png')
         if platform.system()=='Windows':
             subprocess.call(['convert', self.filename+'.pdf', imFile],shell=True)
         else:
             subprocess.call(['convert', self.filename+'.pdf', imFile])
             
-        files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
+        files = [f for f in glob.glob(os.path.join(os.environ['HOME'],'tmp','j2ebook','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
         
     def prepImage(self):
         # Resize the image
         imFileName='temp-%s.png' % self.page
-        imFile=os.path.join(self.filedir,'tempfiles',imFileName)
+        imFile=os.path.join(os.environ['HOME'],'tmp','j2ebook',imFileName)
         try:
             self.rawImg = PIL.Image.open(imFile)
         except IOError:
             try:
-                self.rawImg = PIL.Image.open(os.path.join(self.filedir,'tempfiles','temp.png'))
+                self.rawImg = PIL.Image.open(os.path.join(os.environ['HOME'],'tmp','j2ebook','temp.png'))
             except IOError as detail:
                 print 'Couldn\'t load file: ', detail
         self.imgaspect = float(self.rawImg.size[0]) / float(self.rawImg.size[1])
@@ -336,11 +341,12 @@ class Journal2ebook:
         
     def cleanUp(self):
         ''' Cleans up temp folder/files that were created. Might be an issue if folder already exists.'''
-        files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp',os.path.basename(f))]
+        files = [f for f in glob.glob(os.path.join(os.environ['HOME'],'tmp','j2ebook','*.png')) if re.match('temp',os.path.basename(f))]
         for f in files:
             os.remove(f)
+        os.rmdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))
         if not self.tempdirexists:
-            os.rmdir(os.path.join(self.filedir,'tempfiles'))
+            os.rmdir(os.path.join(os.environ['HOME'],'tmp'))
 
     def bDecClick(self,event):
         self.pageString.set(int(self.pageString.get()) - 1)
@@ -352,16 +358,17 @@ class Journal2ebook:
            
     def bNewFileClick(self,event):
         oldImage=self.filename
-        self.chooseImage()  #changes self.filename
+        newImage=self.chooseImage()  #changes self.filename
         if self.filename==oldImage: #do nothing if filename didn't change
             pass
         else:
             self.cleanUp()
             try:
-                os.mkdir(os.path.join(self.filedir,'tempfiles'))
+                os.mkdir(os.path.join(os.environ['HOME'],'tmp'))
                 self.tempdirexists=False
             except OSError:
                 self.tempdirexists=True
+            os.mkdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))      
 
             self.canvas1.delete('all')
             self.convertImage()
