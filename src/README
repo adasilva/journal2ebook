@@ -28,7 +28,17 @@ Third party programs as backends:
 * imagemagick - to convert pdf to png 
 * k2pdfopt - to convert pdf to epub
 
-Two ways to run this software:
+To install:
+
+* Download the src directory
+
+* From within the src directory, type into the command line
+
+  sudo python setup.py install
+
+* You can now use the application by typing journal2ebook in the command line (with or without a filename argument) 
+
+You can try this software without installing:
 
 * Double click on journal2ebook.py 
 
