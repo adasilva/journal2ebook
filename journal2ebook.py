@@ -6,6 +6,7 @@ from tkFileDialog import askopenfilename,asksaveasfilename
 import tkMessageBox
 import os
 import re
+#import pdb
 import time
 import glob
 import subprocess
@@ -28,7 +29,7 @@ class Journal2ebook:
     imagemagick - to convert pdf to png 
     k2pdfopt - to convert pdf to epub
     '''
-    def __init__(self,parent):
+    def __init__(self,parent,filename):
         self.profileList=[]
         # Some variable initialization
         self.parent=parent
@@ -40,9 +41,7 @@ class Journal2ebook:
         self.ncols = IntVar()
         self.height = 600      # intended height, also could be set by gui
         self.width = None
-        self.rawImg = None  # Image before resizing image
-        self.img = None   # Resized image
-        self.tkImg = None   # Tk photoimage instance
+        self.img = None
         self.imgaspect = None # aspect ratio of image
         self.filename = None        
         self.filedir = None
@@ -69,25 +68,31 @@ class Journal2ebook:
             f=open(self.configFile,'r')
             self.configVars={line.split(':')[0].replace(' ',''):line.split(':')[1].lstrip().rstrip('\n') for line in f} #dictionary of configuration variables
             f.close()
-        self.chooseImage()
+
+        # Check for filename
+        if filename == None:
+            self.chooseImage()
+        else:
+            # journal2ebook was used to open a particular file
+            self.filename = filename
+            self.filedir=os.path.dirname(self.filename) #directory
+            self.filename=self.filename.rstrip('pdf')
+            self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
+            if self.filedir:            
+                self.configVars['last_dir'] = self.filedir
+                self.saveConfig()
+
         try:
-            os.mkdir(os.path.join(os.environ['HOME'],'tmp'))
+            os.mkdir(os.path.join(self.filedir,'tempfiles'))
             self.tempdirexists=False
         except OSError:
             self.tempdirexists=True
-
-        try:
-            os.mkdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))
-        except OSError:
-            self.cleanUp()
-            os.mkdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))
 
         if self.filename=='':
             self.parent.destroy()
         else:
             self.setup()
 
-        
 
     def setup(self):
         '''Sets up the main window.'''
@@ -115,31 +120,28 @@ class Journal2ebook:
         self.tools.add_command(label='Update Selected Profile',command=self.editProfile)
         self.tools.add_command(label='Exit',command=lambda: self.bQuitClick(None))
 
-        self.fPreview=Frame(self.parent)
-        self.fPreview.grid(row=1,column=0,rowspan=3,columnspan=3)
-
         ### Row 1 is the left and right margin scale bars
-        self.scale2=Scale(self.fPreview,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
+        self.scale2=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
         self.scale2.grid(row=1,column=1,sticky=W)
         self.scale2.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale2.bind('<KeyRelease-Right>',self.drawMargins)
 
-        self.scale4=Scale(self.fPreview,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
+        self.scale4=Scale(self.parent,from_=0,to=1,orient=HORIZONTAL,resolution=0.01,sliderlength=15,length=self.width/2.+7,showvalue=0)
         self.scale4.grid(row=1,column=2,sticky=E)
         self.scale4.set(1.)
         self.scale4.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale4.bind('<KeyRelease-Left>',self.drawMargins)
         self.scale4.bind('<KeyRelease-Right>',self.drawMargins)
-        
+
         ### Columns 0 contains the top and bottom margins
-        self.scale1=Scale(self.fPreview,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
+        self.scale1=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
         self.scale1.grid(row=2,column=0,sticky=NW)
         self.scale1.bind('<ButtonRelease-1>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Up>',self.drawMargins)
         self.scale1.bind('<KeyRelease-Down>',self.drawMargins)
 
-        self.scale3=Scale(self.fPreview,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
+        self.scale3=Scale(self.parent,from_=0,to=1,orient=VERTICAL,resolution=0.01,sliderlength=15,length=self.height/2.+7,showvalue=0)
         self.scale3.grid(row=3,column=0,sticky=SW)
         self.scale3.set(1.)
         self.scale3.bind('<ButtonRelease-1>',self.drawMargins)
@@ -147,8 +149,8 @@ class Journal2ebook:
         self.scale3.bind('<KeyRelease-Down>',self.drawMargins)
 
         ### The canvas to show the image and margin lines spans 4 grid segments
-        self.canvas1=Canvas(self.fPreview,width=self.width,height=self.height)  
-        self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=2,sticky=(N,S,E,W),padx=7,pady=7)
+        self.canvas1=Canvas(self.parent,width=self.width,height=self.height)   
+        self.canvas1.grid(row=2,column=1,columnspan=2,rowspan=2,sticky=NW,padx=7,pady=7)
 
         ### Draw the pdf on the canvas        
         # Display image
@@ -225,63 +227,43 @@ class Journal2ebook:
         self.bInc.grid(row=0,column=2, sticky=E)
         self.bInc.bind('<Button-1>', self.bIncClick)
 
-        # Setup re-sizing
-        # If new rows/columns are added, need to add new lines here.
-        self.parent.rowconfigure(0,weight=0)
-        self.parent.rowconfigure(1,weight=0)
-        self.parent.rowconfigure(2,weight=1)
-        self.parent.rowconfigure(3,weight=1)
-        self.parent.rowconfigure(4,weight=0)
-        self.parent.columnconfigure(0,weight=0)
-        self.parent.columnconfigure(1,weight=1)
-        self.parent.columnconfigure(2,weight=1)
-        self.parent.columnconfigure(3,weight=0)
-        
-        self.canvas1.bind('<Configure>',self.resizeImage)
-        #self.parent.bind('<Configure>',self.resizeImage)
-
     def chooseImage(self):
         if 'last_dir' in self.configVars and self.configVars['last_dir'] is not '':
             initdir = self.configVars['last_dir']+"/"
         else:
             initdir = '~/'
-        newfilename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
-        if newfilename==():  #This happens if Cancel button is pressed
-            pass
-        else:
-            self.filename = newfilename 
-            self.filedir=os.path.dirname(self.filename) #directory
-            self.filename=self.filename.rstrip('pdf')
-            self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
-            if self.filedir:            
-                self.configVars['last_dir'] = self.filedir
-                self.saveConfig()
+        self.filename = askopenfilename(parent=self.parent,initialdir=initdir, filetypes=[('pdf','*.pdf'),])
+        self.filedir=os.path.dirname(self.filename) #directory
+        self.filename=self.filename.rstrip('pdf')
+        self.filename=self.filename.rstrip('.') #need to do the two strips separately so that we can handle a file named mypdf.pdf, for example        
+        if self.filedir:            
+            self.configVars['last_dir'] = self.filedir
+            self.saveConfig()
 
     def convertImage(self):
         # First, convert pdf to png
-        imFile=os.path.join(os.environ['HOME'],'tmp','j2ebook','temp.png')
+        imFile=os.path.join(self.filedir,'tempfiles','temp.png')
         if platform.system()=='Windows':
-            subprocess.call(['convert', self.filename+'.pdf', imFile],shell=True)
+            subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
         else:
             subprocess.call(['convert', self.filename+'.pdf', imFile])
-            
-        files = [f for f in glob.glob(os.path.join(os.environ['HOME'],'tmp','j2ebook','*.png')) if re.match('temp-',os.path.basename(f))]
+        files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
         
     def prepImage(self):
         # Resize the image
         imFileName='temp-%s.png' % self.page
-        imFile=os.path.join(os.environ['HOME'],'tmp','j2ebook',imFileName)
+        imFile=os.path.join(self.filedir,'tempfiles',imFileName)
         try:
-            self.rawImg = PIL.Image.open(imFile)
+            self.img = PIL.Image.open(imFile)
         except IOError:
             try:
-                self.rawImg = PIL.Image.open(os.path.join(os.environ['HOME'],'tmp','j2ebook','temp.png'))
+                self.img = PIL.Image.open(os.path.join(self.filedir,'tempfiles','temp.png'))
             except IOError as detail:
                 print 'Couldn\'t load file: ', detail
-        self.imgaspect = float(self.rawImg.size[0]) / float(self.rawImg.size[1])
+        self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
-        self.img = self.rawImg.resize((self.width, self.height), PIL.Image.ANTIALIAS)
+        self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
 
     def updateImage(self,event):
         if int(self.pageString.get()) > self.maxPages:
@@ -301,35 +283,10 @@ class Journal2ebook:
         self.top=self.canvas1.create_line(ct,0,ct,self.height)
         cb=self.width/2.+self.scale4.get()*self.width/2.
         self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
-
-    def resizeImage(self,event):
-        self.canvas1.delete('all')
-        #oldheight=self.height
-        #oldwidth=self.width
-        if self.canvas1.winfo_height()*self.imgaspect < self.canvas1.winfo_width():
-            self.height=self.canvas1.winfo_height()
-            self.width = int(self.height * self.imgaspect)
-        else:
-            self.width=self.canvas1.winfo_width()
-            self.height = int(1.0*self.width/self.imgaspect)
-
-        self.img = self.rawImg.resize((self.width, self.height), PIL.Image.ANTIALIAS)
-        self.tkImg=ImageTk.PhotoImage(self.img)
-        self.canvas1.create_image(self.width/2.,self.height/2.,image=self.tkImg)
-        cl=self.scale1.get()*self.height/2.
-        self.left=self.canvas1.create_line(0,cl,self.width,cl)
-        cr=self.height/2.+self.scale3.get()*self.height/2.
-        self.right=self.canvas1.create_line(0,cr,self.width,cr)
-        ct=self.scale2.get()*self.width/2.
-        self.top=self.canvas1.create_line(ct,0,ct,self.height)
-        cb=self.width/2.+self.scale4.get()*self.width/2.
-        self.bottom=self.canvas1.create_line(cb,0,cb,self.height)
-
-        
         
     def drawImage(self):
-        self.tkImg=ImageTk.PhotoImage(self.img)
-        self.canvas1.create_image(self.width/2.,self.height/2.,image=self.tkImg)
+        self.img=ImageTk.PhotoImage(self.img)
+        self.pdfimg=self.canvas1.create_image(self.width/2.,self.height/2.,image=self.img)
         
     def drawMargins(self,event):
         d=7.  #half of the slider length
@@ -343,14 +300,17 @@ class Journal2ebook:
         cb=self.width/2.+d+g+self.scale4.get()*(self.width/2.-d-g)
         self.canvas1.coords(self.bottom,cb,0,cb,self.height)
         
-    def cleanUp(self):
+    def cleanUp(self,oldfiledir=None,oldtempdirexists=None):
         ''' Cleans up temp folder/files that were created. Might be an issue if folder already exists.'''
-        files = [f for f in glob.glob(os.path.join(os.environ['HOME'],'tmp','j2ebook','*.png')) if re.match('temp',os.path.basename(f))]
+        if oldfiledir==None:
+            oldfiledir = self.filedir
+        if oldtempdirexists==None:
+            oldtempdirexists = self.tempdirexists
+        files = [f for f in glob.glob(os.path.join(oldfiledir,'tempfiles','*.png')) if re.match('temp',os.path.basename(f))]
         for f in files:
             os.remove(f)
-        os.rmdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))
-        if not self.tempdirexists:
-            os.rmdir(os.path.join(os.environ['HOME'],'tmp'))
+        if not oldtempdirexists:
+            os.rmdir(os.path.join(self.filedir,'tempfiles'))
 
     def bDecClick(self,event):
         self.pageString.set(int(self.pageString.get()) - 1)
@@ -362,18 +322,13 @@ class Journal2ebook:
            
     def bNewFileClick(self,event):
         oldImage=self.filename
-        newImage=self.chooseImage()  #changes self.filename
-        if self.filename==oldImage: #do nothing if filename didn't change
-            pass
+        oldFileDir=self.filedir
+        oldTempDirExists=self.tempdirexists
+        self.chooseImage()  #changes self.filename and self.filedir
+        if self.filename==oldImage:
+            pass  #don't do anything
         else:
-            self.cleanUp()
-            try:
-                os.mkdir(os.path.join(os.environ['HOME'],'tmp'))
-                self.tempdirexists=False
-            except OSError:
-                self.tempdirexists=True
-            os.mkdir(os.path.join(os.environ['HOME'],'tmp','j2ebook'))      
-
+            self.cleanUp(oldFileDir,oldTempDirExists)
             self.canvas1.delete('all')
             self.convertImage()
             self.prepImage()
@@ -512,9 +467,12 @@ To update a profile, first select it from the menu. Make your changes within the
         self.parent.destroy()
 
 if __name__ == '__main__':
+    if len(sys.argv)!=1:
+        filename = sys.argv[1]
+    else:
+        filename = None
+
     root=Tk()
     root.wm_title('journal2ebook')
-    root.columnconfigure(0,weight=1)
-    root.rowconfigure(0,weight=1)
-    myapp=Journal2ebook(root)
+    myapp=Journal2ebook(root,filename)
     root.mainloop()
