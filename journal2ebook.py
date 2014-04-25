@@ -450,7 +450,7 @@ To update a profile, first select it from the menu. Make your changes within the
         topmargin=self.scale1.get()*11/2.
         bottommargin=(1-self.scale3.get())*11/2.
         rightmargin=(1-self.scale4.get())*8.5/2.
-        newFileName=asksaveasfilename(parent=root,filetypes=[('pdf','*.pdf'),('epub','*.epub')] ,title="Save the image as")
+        newFileName=asksaveasfilename(parent=root,filetypes=[('pdf','*.pdf'),] ,title="Save the image as")
         if self.ncols==0:
             n=2
         else:
