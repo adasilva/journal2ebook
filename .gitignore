@@ -1,3 +1,9 @@
 *.pyc
 *~
 k2pdfopt.exe
+MANIFEST
+build/*
+
+journal2ebook.conf
+journal2ebook.log
+journal2ebookprofiles.txt

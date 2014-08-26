@@ -469,6 +469,7 @@ To update a profile, first select it from the menu. Make your changes within the
         self.cleanUp()
         self.parent.destroy()
 
+
 if __name__ == '__main__':
     if len(sys.argv)!=1:
         filename = sys.argv[1]
