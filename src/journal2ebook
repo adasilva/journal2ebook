@@ -247,7 +247,7 @@ class Journal2ebook:
             subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
         elif platform.system()=='Linux':
             subprocess.call(['convert', self.filename+'.pdf', imFile])
-        #for osx sips instead of sips
+        #for osx sips instead of convert
         elif platform.system()=='Darwin':
             subprocess.call(['sips','-s','format', 'png',  self.filename+'.pdf' ,'--out' ,imFile])
 
