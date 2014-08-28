@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-import ImageTk
+try:
+    import ImageTk
+except ImportError:
+    from PIL import ImageTk
 import PIL.Image
 from Tkinter import *
 from tkFileDialog import askopenfilename,asksaveasfilename
