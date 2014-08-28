@@ -25,7 +25,9 @@ the application
 
 Third party programs as backends:
 
-* imagemagick - to convert pdf to png 
+* To convert pdf to png:
+  * imagemagick for linux users
+  * sipe for mac users
 * k2pdfopt - to convert pdf to epub
 
 To install:
