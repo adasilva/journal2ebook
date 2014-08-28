@@ -251,8 +251,17 @@ class Journal2ebook:
         imFile=os.path.join(self.filedir,'tempfiles','temp.png')
         if platform.system()=='Windows':
             subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
-        else:
+        elif platform.system()=='Linux':
             subprocess.call(['convert', self.filename+'.pdf', imFile])
+
+        elif platform.system()=='Darwin':
+            #for osx sips instead of convert
+            subprocess.call(['sips','-s','format', 'png',  self.filename+'.pdf' ,'--out' ,imFile])
+        else:
+            # Try linux version of convert
+            subprocess.call(['convert', self.filename+'.pdf', imFile])
+
+
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
         

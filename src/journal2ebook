@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-from PIL import ImageTk
+try:
+    import ImageTk
+except ImportError:
+    from PIL import ImageTk
 import PIL.Image
 from Tkinter import *
 from tkFileDialog import askopenfilename,asksaveasfilename
@@ -247,9 +250,12 @@ class Journal2ebook:
             subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
         elif platform.system()=='Linux':
             subprocess.call(['convert', self.filename+'.pdf', imFile])
-        #for osx sips instead of convert
         elif platform.system()=='Darwin':
+            #for osx sips instead of convert
             subprocess.call(['sips','-s','format', 'png',  self.filename+'.pdf' ,'--out' ,imFile])
+        else:
+            # Try linux version of convert
+            subprocess.call(['convert', self.filename+'.pdf', imFile])
 
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
