@@ -15,7 +15,7 @@ The dependencies listed in the following sections must also be met.
 
 All users
 ---------
-* Python 2.7 or higher
+* Python 2.6 or higher
 
 Third party programs as backends:
 

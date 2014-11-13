@@ -69,7 +69,6 @@ class Journal2ebook:
             file.close()
 
             f=open(self.configFile,'r')
-            # Following line changed from dictionary comprehension to dict([list comprehension]) to support Python 2.6
             self.configVars=dict([(line.split(':')[0].replace(' ',''),line.split(':')[1].lstrip().rstrip('\n')) for line in f]) #dictionary of configuration variables
             f.close()
 
