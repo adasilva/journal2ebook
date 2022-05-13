@@ -58,15 +58,14 @@ class Journal2ebook:
 
         # configuration file
         try:
-            f = open(self.configFile, "r")
-            for line in f:
-                if line.strip() != "":
-                    self.configVars[line.split(":")[0].replace(" ", "")] = line.split(
-                        ":"
-                    )[1].strip()  # dictionary of configuration variables
-                else:
-                    pass
-            f.close()
+            with open(self.configFile, "r") as f:
+                for line in f:
+                    if line.strip() != "":
+                        self.configVars[line.split(":")[0].replace(" ", "")] = (
+                            line.split(":")[1].strip()
+                        )  # dictionary of configuration variables
+                    else:
+                        pass
         except IOError:
             # instead of doing this, maybe the config file should be set up on install?
             self.profileDialog = tkMessageBox.showinfo(
@@ -74,21 +73,16 @@ class Journal2ebook:
                 "No configuration file found.\nA new configuration file has been created for you.",
             )
 
-            file = open(self.configFile, "w")
-            file.write("")
-            file.close()
+            with open(self.configFile, "w") as file:
+                file.write("")
 
-            f = open(self.configFile, "r")
-            self.configVars = dict(
-                [
-                    (
-                        line.split(":")[0].replace(" ", ""),
-                        line.split(":")[1].lstrip().rstrip("\n"),
-                    )
+            with open(self.configFile, "r") as f:
+                self.configVars = {
+                    line.split(":")[0].replace(" ", ""): line.split(":")[1]
+                    .lstrip()
+                    .rstrip("\n")
                     for line in f
-                ]
-            )  # dictionary of configuration variables
-            f.close()
+                }  # dictionary of configuration variables
 
         # Check for filename
         if filename == None:
@@ -245,13 +239,12 @@ class Journal2ebook:
         self.lProfiles.bind("<<ListboxSelect>>", self.chooseProfile)
 
         if "profiles" in self.configVars and self.configVars["profiles"] != "None":
-            f = open(self.configVars["profiles"], "r")
-            for line in f:
-                item = line.strip("]").strip("[").strip("\n").split(",")
-                self.profileList.append(item)
-            f.close()
+            with open(self.configVars["profiles"], "r") as f:
+                for line in f:
+                    item = line.strip("]").strip("[").strip("\n").split(",")
+                    self.profileList.append(item)
 
-        for i in range(len(self.profileList)):
+        for i, _ in enumerate(self.profileList):
             self.lProfiles.insert(tkinter.END, self.profileList[i][0])
 
         ### Quit and save buttons on the side
