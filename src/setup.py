@@ -1,13 +1,10 @@
-#!/usr/bin/env python
+# setup.py
+import setuptools
 
-from distutils.core import setup
+from src import __version__
 
-setup(name='journal2ebook',
-      version='0.1.1',
-      scripts = ['journal2ebook'],
-      description='Conversion tool for academic pdfs',
-      author='Ashley DaSilva and Jason Gullifer',
-      author_email='adasilva@physics.utexas.edu',
-      url='https://github.com/adasilva/journal2ebook',
-      license='LICENSE',
-     )
+setuptools.setup(
+    version=__version__,
+    install_requires=["appdirs", "poppler", "image", "pdf2image"],
+    entry_points={"console_scripts": ["journal2ebook=src._window:main"]},
+)

@@ -1,0 +1,28 @@
+[tool.pytest.ini_options]
+addopts = "--cov=snake --cov-report=html --cov-report=term"
+testpaths = [
+    "tests",
+]
+# filterwarnings = ignore::DeprecationWarning
+
+[tool.mypy]
+mypy_path = "snake"
+check_untyped_defs = true
+disallow_any_generics = true
+ignore_missing_imports = true
+no_implicit_optional = true
+show_error_codes = true
+strict_equality = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+no_implicit_reexport = true
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.pycodestyle]
+max-line-length = 88
+ignore = "E203, W503, E402"
