@@ -113,12 +113,12 @@ class Journal2ebook:
 
     def setup(self):
         """Sets up the main window."""
-        ### Loading and preparing the image. This is done first
-        ### because the size of the canvas depends on the image size.
         self.convertImage()
+        # Loading and preparing the image. This is done first
+        # because the size of the canvas depends on the image size.
         self.prepImage()
 
-        ### Application uses the grid geometry management
+        # Application uses the grid geometry management
         # currently the size is 5 rows x 4 columns
 
         # Set up a menu bar with Tools.
@@ -139,7 +139,7 @@ class Journal2ebook:
         )
         self.tools.add_command(label="Exit", command=lambda: self.bQuitClick(None))
 
-        ### Row 1 is the left and right margin scale bars
+        # Row 1 is the left and right margin scale bars
         self.scale2 = tkinter.Scale(
             self.parent,
             from_=0,
@@ -171,7 +171,7 @@ class Journal2ebook:
         self.scale4.bind("<KeyRelease-Left>", self.drawMargins)
         self.scale4.bind("<KeyRelease-Right>", self.drawMargins)
 
-        ### Columns 0 contains the top and bottom margins
+        # Columns 0 contains the top and bottom margins
         self.scale1 = tkinter.Scale(
             self.parent,
             from_=0,
@@ -203,27 +203,27 @@ class Journal2ebook:
         self.scale3.bind("<KeyRelease-Up>", self.drawMargins)
         self.scale3.bind("<KeyRelease-Down>", self.drawMargins)
 
-        ### The canvas to show the image and margin lines spans 4 grid segments
+        # The canvas to show the image and margin lines spans 4 grid segments
         self.canvas1 = tkinter.Canvas(self.parent, width=self.width, height=self.height)
         self.canvas1.grid(
             row=2, column=1, columnspan=2, rowspan=2, sticky=tkinter.NW, padx=7, pady=7
         )
 
-        ### Draw the pdf on the canvas
+        # Draw the pdf on the canvas
         # Display image
         self.drawImage()
 
-        ### Draw margin lines - default are at the edges of the image
+        # Draw margin lines - default are at the edges of the image
         self.left = self.canvas1.create_line(0, 0, 0, self.height)
         self.right = self.canvas1.create_line(self.width, 0, self.width, self.height)
         self.top = self.canvas1.create_line(0, 0, 0, self.width)
         self.bottom = self.canvas1.create_line(0, self.height, self.width, self.height)
 
-        ### Create a frame on the side for extras
+        # Create a frame on the side for extras
         self.fExtras = tkinter.Frame(self.parent)
         self.fExtras.grid(row=2, column=3, sticky=tkinter.N + tkinter.S)
 
-        ### Some extra options in last column
+        # Some extra options in last column
         self.bSkipFirst = tkinter.Checkbutton(
             self.fExtras, text="Skip first page", variable=self.skipFirst
         )
@@ -248,7 +248,7 @@ class Journal2ebook:
         for i, _ in enumerate(self.profileList):
             self.lProfiles.insert(tkinter.END, self.profileList[i][0])
 
-        ### Quit and save buttons on the side
+        # Quit and save buttons on the side
         self.fButtons = tkinter.Frame(self.parent)
         self.fButtons.grid(row=3, column=3, sticky=tkinter.S)
         self.bNewFile = tkinter.Button(
@@ -270,7 +270,7 @@ class Journal2ebook:
         self.bQuit.bind("<Button-1>", self.bQuitClick)
         self.bQuit.bind("<Return>", self.bQuitClick)
 
-        ### Page increment buttons within a frame (for centering purposes)
+        # Page increment buttons within a frame (for centering purposes)
         self.fPageChange = tkinter.Frame(self.parent)
         self.fPageChange.grid(row=4, column=1, columnspan=2)
 
