@@ -359,11 +359,11 @@ class Journal2ebook:
         cb = self.width / 2.0 + d + g + self.scale4.get() * (self.width / 2.0 - d - g)
         self.canvas1.coords(self.bottom, cb, 0, cb, self.height)
 
-    def cleanUp(self, oldfiledir=None, oldtempdirexists=None):
+    def clean_up(self, oldfiledir=None, oldtempdirexists=None):
         """Cleans up temp folder/files that were created. Might be an issue if folder already exists."""
-        if oldfiledir == None:
+        if oldfiledir is None:
             oldfiledir = self.filedir
-        if oldtempdirexists == None:
+        if oldtempdirexists is None:
             oldtempdirexists = self.tempdirexists
         files = [
             f
