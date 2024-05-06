@@ -11,6 +11,7 @@ import re
 import subprocess
 import tkinter
 import tkinter.messagebox
+from pathlib import Path
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import click
@@ -36,7 +37,7 @@ class Journal2ebook:
     k2pdfopt - to convert pdf to epub
     """
 
-    def __init__(self, parent, filename):
+    def __init__(self, parent, path: Path | None):
         self.profileList = []
         # Some variable initialization
         self.parent = parent
@@ -85,16 +86,14 @@ class Journal2ebook:
                 }  # dictionary of configuration variables
 
         # Check for filename
-        if filename == None:
+        if path is None:
             self.chooseImage()
         else:
             # journal2ebook was used to open a particular file
-            self.filename = filename
-            self.filedir = os.path.dirname(self.filename)  # directory
-            self.filename = self.filename.rstrip("pdf")
-            self.filename = self.filename.rstrip(
-                "."
-            )  # need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
+            self.path = path
+            self.filename = path.stem
+            self.filedir = path.parent
+
             if self.filedir:
                 self.configVars["last_dir"] = self.filedir
                 self.saveConfig()
