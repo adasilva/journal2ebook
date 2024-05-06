@@ -39,7 +39,7 @@ the application
 
 Third party programs as backends:
 
-* imagemagick - to convert pdf to png 
+* imagemagick - to convert pdf to png
 * k2pdfopt - to convert pdf to epub
 
 To install:
@@ -50,15 +50,15 @@ To install:
 
   sudo python setup.py install
 
-* You can now use the application by typing journal2ebook in the command line (with or without a filename argument) 
+* You can now use the application by typing journal2ebook in the command line (with or without a filename argument)
 
 You can try this software without installing:
 
-* Double click on journal2ebook.py 
+* Double click on journal2ebook.py
 
   (if it doesn't work, check that the file is executable)
 
-* Run from the terminal: 
+* Run from the terminal:
 
   python journal2ebook.py
 
@@ -76,7 +76,7 @@ the application
 
 Third party programs as backends:
 
-* imagemagick - to convert pdf to png 
+* imagemagick - to convert pdf to png
 * k2pdfopt - to convert pdf to epub
 
 
@@ -91,4 +91,3 @@ Dependencies that seem to be included with most installations of python:
 * time
 * glob
 * subprocess
-  
