@@ -5,7 +5,6 @@ except ImportError:
     from PIL import ImageTk
 import glob
 import os
-import platform
 import re
 import subprocess
 import sys
@@ -17,6 +16,7 @@ import tkinter.messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import click
+import pdf2image
 import PIL.Image
 
 
@@ -114,9 +114,9 @@ class Journal2ebook:
 
     def setup(self):
         """Sets up the main window."""
-        self.convertImage()
         # Loading and preparing the image. This is done first
         # because the size of the canvas depends on the image size.
+        self.read_images()
         self.prepImage()
 
         # Application uses the grid geometry management
@@ -292,63 +292,33 @@ class Journal2ebook:
         self.bInc.bind("<Button-1>", self.bIncClick)
 
     def chooseImage(self):
-        if "last_dir" in self.configVars and self.configVars["last_dir"] is not "":
+        if "last_dir" in self.configVars and self.configVars["last_dir"] != "":
             initdir = self.configVars["last_dir"] + "/"
         else:
             initdir = "~/"
-        self.filename = askopenfilename(
+        filename = askopenfilename(
             parent=self.parent,
             initialdir=initdir,
             filetypes=[
                 ("pdf", "*.pdf"),
             ],
         )
-        self.filedir = os.path.dirname(self.filename)  # directory
-        self.filename = self.filename.rstrip("pdf")
-        self.filename = self.filename.rstrip(
-            "."
-        )  # need to do the two strips separately so that we can handle a file named mypdf.pdf, for example
-        if self.filedir:
-            self.configVars["last_dir"] = self.filedir
-            self.saveConfig()
+        if filename is None:
+            return
 
-    def convertImage(self):
-        # First, convert pdf to png
-        imFile = os.path.join(self.filedir, "tempfiles", "temp.png")
-        if platform.system() == "Windows":
-            subprocess.call(["convert", self.filename + ".pdf", imFile, "shell=True"])
-        elif platform.system() == "Linux":
-            subprocess.call(["convert", self.filename + ".pdf", imFile])
+        self.filedir = Path(filename).parent
+        self.filename = Path(filename).stem
+        self.configVars["last_dir"] = str(self.filedir)
+        self.saveConfig()
 
-        elif platform.system() == "Darwin":
-            # for osx sips instead of convert
-            subprocess.call(
-                ["sips", "-s", "format", "png", self.filename + ".pdf", "--out", imFile]
-            )
-        else:
-            # Try linux version of convert
-            subprocess.call(["convert", self.filename + ".pdf", imFile])
-
-        files = [
-            f
-            for f in glob.glob(os.path.join(self.filedir, "tempfiles", "*.png"))
-            if re.match("temp-", os.path.basename(f))
-        ]
-        self.maxPages = len(files)
+    def read_images(self):
+        self._images = pdf2image.convert_from_path(self.path)
+        self.maxPages = len(self._images)
 
     def prepImage(self):
         # Resize the image
-        imFileName = "temp-%s.png" % self.page
-        imFile = os.path.join(self.filedir, "tempfiles", imFileName)
-        try:
-            self.img = PIL.Image.open(imFile)
-        except IOError:
-            try:
-                self.img = PIL.Image.open(
-                    os.path.join(self.filedir, "tempfiles", "temp.png")
-                )
-            except IOError as detail:
-                print("Couldn't load file: ", detail)
+        self.img = self._images[self.page]
+
         self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
         self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
@@ -424,7 +394,7 @@ class Journal2ebook:
         else:
             self.cleanUp(oldFileDir, oldTempDirExists)
             self.canvas1.delete("all")
-            self.convertImage()
+            self.read_images()
             self.prepImage()
             self.drawImage()
             cl = self.scale1.get() * self.height / 2.0
