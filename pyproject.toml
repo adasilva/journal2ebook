@@ -1,28 +1,145 @@
-[tool.pytest.ini_options]
-addopts = "--cov=snake --cov-report=html --cov-report=term"
-testpaths = [
-    "tests",
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["matplotlib", "setuptools"]
+
+[project]
+authors = [
+    {email = "latexplotlib.gvxel@aleeas.com", name = "Constantin Gahr"},
+    {name = "Ashley DaSilva"},
+    {name = "Jason Gullifer"}
 ]
-# filterwarnings = ignore::DeprecationWarning
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "appdirs",
+    "image",
+    "pdf2image"
+]
+description = "GUI for k2pdfopt"
+dynamic = ["version"]
+keywords = ["epub", "pdf", "pdf-conversion"]
+license = {text = "GNU"}
+name = "journal2ebook"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.gui-scripts]
+journal2ebook = "journal2ebook._window:main"
+
+[project.urls]
+Homepage = "https://github.com/adasilva/journal2ebook"
+Issues = "https://github.com/adasilva/journal2ebook/issues"
+
+[tool.lint.ruff]
+fix = true
+fixable = ["I"]
+ignore = [
+    "ANN101"  # missing-type-self
+]
+select = [
+    "A",
+    "ANN",
+    "ARG",
+    "B",
+    "BLE",
+    "C4",
+    "C90",
+    "DTZ",
+    "E",
+    "EM",
+    "ERA",
+    "EXE",
+    "F",
+    "FBT",  # unclear if good or not
+    "G",
+    "I",
+    "ICN",
+    "INP",
+    "ISC",
+    "N",
+    "NPY",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "S",
+    "SIM",
+    "SLF",
+    "T10",
+    "T20",
+    "TCH",
+    "TID",
+    "TRY",
+    # "D",
+    "UP",
+    "W",
+    "YTT"
+]
+target-version = "py38"
 
 [tool.mypy]
-mypy_path = "snake"
 check_untyped_defs = true
-disallow_any_generics = true
-ignore_missing_imports = true
+exclude = [
+    ".cache",
+    ".git",
+    ".ipynb_checkpoints",
+    "__pycache__",
+    "build",
+    "dist",
+    "examples",
+    "setup*",
+    "tests"
+]
+mypy_path = "src"
 no_implicit_optional = true
+no_implicit_reexport = true
 show_error_codes = true
 strict_equality = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
-no_implicit_reexport = true
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["matplotlib.*"]
 
-[tool.pycodestyle]
-max-line-length = 88
-ignore = "E203, W503, E402"
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report=html --cov-report=term"
+testpaths = ["tests"]
+
+[tool.ruff.lint.flake8-annotations]
+suppress-dummy-args = true
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+
+[tool.setuptools.dynamic]
+version = {attr = "journal2ebook._version.__version__"}
+
+[tool.setuptools.package-data]
+journal2ebook = ["py.typed"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.tomlsort]
+all = true
+in_place = true
+spaces_before_inline_comment = 2
+spaces_indent_inline_array = 4
+
+[tool.tomlsort.overrides]
+"project.classifiers".inline_arrays = false
+"tool.ruff.select".inline_arrays = false
