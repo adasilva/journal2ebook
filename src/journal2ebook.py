@@ -3,14 +3,12 @@ try:
     import ImageTk
 except ImportError:
     from PIL import ImageTk
+
+
 import glob
 import os
 import re
 import subprocess
-import sys
-
-# import pdb
-import time
 import tkinter
 import tkinter.messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfilename
@@ -134,9 +132,10 @@ class Journal2ebook:
         self.tools = tkinter.Menu(self.menubar)
         self.menubar.add_cascade(label="Tools", menu=self.tools)
         # Add tools to the menu
-        self.tools.add_command(label="Save Profile", command=self.saveProfile)
+
+        self.tools.add_command(label="Save Profile", command=self.save_profile)
         self.tools.add_command(
-            label="Update Selected Profile", command=self.editProfile
+            label="Update Selected Profile", command=self.edit_profile
         )
         self.tools.add_command(label="Exit", command=lambda: self.bQuitClick(None))
 
@@ -238,7 +237,7 @@ class Journal2ebook:
         ### Profiles list box
         self.lProfiles = tkinter.Listbox(self.fExtras)
         self.lProfiles.grid(row=2, column=0, sticky=tkinter.SW)
-        self.lProfiles.bind("<<ListboxSelect>>", self.chooseProfile)
+        self.lProfiles.bind("<<ListboxSelect>>", self.choose_profile)
 
         if "profiles" in self.configVars and self.configVars["profiles"] != "None":
             with open(self.configVars["profiles"], "r") as f:
@@ -392,7 +391,7 @@ class Journal2ebook:
         if self.filename == oldImage:
             pass  # don't do anything
         else:
-            self.cleanUp(oldFileDir, oldTempDirExists)
+            self.clean_up(oldFileDir, oldTempDirExists)
             self.canvas1.delete("all")
             self.read_images()
             self.prepImage()
@@ -406,7 +405,7 @@ class Journal2ebook:
             cb = self.width / 2.0 + self.scale4.get() * self.width / 2.0
             self.bottom = self.canvas1.create_line(cb, 0, cb, self.height)
 
-    def saveProfile(self):
+    def save_profile(self):
         if ("profiles" not in self.configVars) or (
             self.configVars["profiles"] == "None"
         ):
@@ -517,7 +516,7 @@ class Journal2ebook:
         self.lProfiles.insert(tkinter.END, profileName)
         self.saveProfileDialog.destroy()
 
-    def editProfile(self):
+    def edit_profile(self):
         try:
             i = int(self.lProfiles.curselection()[0])
             self.profileList[i][1 : len(self.profileList[i])] = [
@@ -543,7 +542,7 @@ class Journal2ebook:
 To update a profile, first select it from the menu. Make your changes within the main window. Then use "Update Selected Profile" from the Tools menu.""",
             )
 
-    def chooseProfile(self, event):
+    def choose_profile(self, event):
         i = int(event.widget.curselection()[0])
         self.skipFirst.set(self.profileList[i][1])
         self.ncols.set(self.profileList[i][2])
@@ -621,7 +620,7 @@ To update a profile, first select it from the menu. Make your changes within the
             )
 
     def bQuitClick(self, event):
-        self.cleanUp()
+        self.clean_up()
         self.parent.destroy()
 
 
