@@ -14,6 +14,7 @@ import sys
 import time
 import tkinter
 
+import click
 import PIL.Image
 import tkMessageBox
 from tkFileDialog import askopenfilename, asksaveasfilename
@@ -653,13 +654,16 @@ To update a profile, first select it from the menu. Make your changes within the
         self.parent.destroy()
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 1:
-        filename = sys.argv[1]
-    else:
-        filename = None
-
+@click.command()
+@click.argument(
+    "filename", type=click.Path(exists=True, path_type=Path), required=False
+)
+def main(filename: Path):
     root = tkinter.Tk()
     root.wm_title("journal2ebook")
-    myapp = Journal2ebook(root, filename)
+    _ = Journal2ebook(root, filename)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=no-value-for-parameter
