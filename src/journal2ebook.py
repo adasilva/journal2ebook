@@ -272,7 +272,7 @@ class Journal2ebook:
             try:
                 self.img = PIL.Image.open(os.path.join(self.filedir,'tempfiles','temp.png'))
             except IOError as detail:
-                print 'Couldn\'t load file: ', detail
+                print ('Couldn\'t load file: ', detail)
         self.imgaspect = float(self.img.size[0]) / float(self.img.size[1])
         self.width = int(self.height * self.imgaspect)
         self.img = self.img.resize((self.width, self.height), PIL.Image.ANTIALIAS)
@@ -408,7 +408,7 @@ class Journal2ebook:
    
     def profilesOK(self,event):
         self.configVars['profiles'] = self.fileBoxText.get()
-        print 'in profilesOK: fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles'])
+        print ('in profilesOK: fileBoxText= %s, configVars=%s' %(self.fileBoxText.get(),self.configVars['profiles']))
         self.saveConfig()
         #need to create the profiles file in stated location
         self.profileDialog.destroy()
