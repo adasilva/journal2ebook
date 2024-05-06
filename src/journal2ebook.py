@@ -13,11 +13,11 @@ import sys
 # import pdb
 import time
 import tkinter
+import tkinter.messagebox
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 import click
 import PIL.Image
-import tkMessageBox
-from tkFileDialog import askopenfilename, asksaveasfilename
 
 
 class Journal2ebook:
@@ -69,9 +69,10 @@ class Journal2ebook:
                         pass
         except IOError:
             # instead of doing this, maybe the config file should be set up on install?
-            self.profileDialog = tkMessageBox.showinfo(
+            self.profileDialog = tkinter.messagebox.showinfo(
                 "Info",
-                "No configuration file found.\nA new configuration file has been created for you.",
+                "No configuration file found."
+                "A new configuration file has been created for you.",
             )
 
             with open(self.configFile, "w") as file:
@@ -564,8 +565,8 @@ class Journal2ebook:
                     for j in range(1, len(profile)):
                         profileStr = profileStr + "," + str(profile[j])
                     f.write(profileStr + "\n")
-        except:
-            tkMessageBox.showinfo(
+        except Exception:
+            tkinter.messagebox.showinfo(
                 "Info",
                 """No selection was made.
 
