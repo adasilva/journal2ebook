@@ -250,12 +250,14 @@ class Journal2ebook:
             subprocess.call(['convert', self.filename+'.pdf', imFile,'shell=True'])
         elif platform.system()=='Linux':
             subprocess.call(['convert', self.filename+'.pdf', imFile])
+
         elif platform.system()=='Darwin':
             #for osx sips instead of convert
             subprocess.call(['sips','-s','format', 'png',  self.filename+'.pdf' ,'--out' ,imFile])
         else:
             # Try linux version of convert
             subprocess.call(['convert', self.filename+'.pdf', imFile])
+
 
         files = [f for f in glob.glob(os.path.join(self.filedir,'tempfiles','*.png')) if re.match('temp-',os.path.basename(f))]
         self.maxPages = len(files)
@@ -475,6 +477,7 @@ To update a profile, first select it from the menu. Make your changes within the
     def bQuitClick(self,event):
         self.cleanUp()
         self.parent.destroy()
+
 
 if __name__ == '__main__':
     if len(sys.argv)!=1:
