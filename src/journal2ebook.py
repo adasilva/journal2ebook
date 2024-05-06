@@ -4,7 +4,9 @@ try:
 except ImportError:
     from PIL import ImageTk
 import PIL.Image
-from Tkinter import *
+
+import sys
+import tkinter
 from tkFileDialog import askopenfilename, asksaveasfilename
 import tkMessageBox
 import os
@@ -40,11 +42,11 @@ class Journal2ebook:
         # Some variable initialization
         self.parent = parent
         self.page = 0
-        self.pageString = StringVar()
+        self.pageString = tkinter.StringVar()
         self.pageString.set(self.page + 1)
         self.maxPages = None
-        self.skipFirst = IntVar()
-        self.ncols = IntVar()
+        self.skipFirst = tkinter.IntVar()
+        self.ncols = tkinter.IntVar()
         self.height = 600  # intended height, also could be set by gui
         self.width = None
         self.img = None
@@ -61,9 +63,7 @@ class Journal2ebook:
                 if line.strip() != "":
                     self.configVars[line.split(":")[0].replace(" ", "")] = line.split(
                         ":"
-                    )[
-                        1
-                    ].strip()  # dictionary of configuration variables
+                    )[1].strip()  # dictionary of configuration variables
                 else:
                     pass
             f.close()
@@ -127,15 +127,15 @@ class Journal2ebook:
         # currently the size is 5 rows x 4 columns
 
         # Set up a menu bar with Tools.
-        self.fMenu = Frame(self.parent, relief="groove")
+        self.fMenu = tkinter.Frame(self.parent, relief="groove")
         self.fMenu.grid(row=0, column=0, columnspan=4)
 
-        self.menubar = Menu(self.parent)  # menubar
+        self.menubar = tkinter.Menu(self.parent)  # menubar
         self.parent.config(menu=self.menubar)  # configuration
 
         # create one of the menus in the menubar and
         # add a cascade to contain the tools
-        self.tools = Menu(self.menubar)
+        self.tools = tkinter.Menu(self.menubar)
         self.menubar.add_cascade(label="Tools", menu=self.tools)
         # Add tools to the menu
         self.tools.add_command(label="Save Profile", command=self.saveProfile)
@@ -145,73 +145,73 @@ class Journal2ebook:
         self.tools.add_command(label="Exit", command=lambda: self.bQuitClick(None))
 
         ### Row 1 is the left and right margin scale bars
-        self.scale2 = Scale(
+        self.scale2 = tkinter.Scale(
             self.parent,
             from_=0,
             to=1,
-            orient=HORIZONTAL,
+            orient=tkinter.HORIZONTAL,
             resolution=0.01,
             sliderlength=15,
             length=self.width / 2.0 + 7,
             showvalue=0,
         )
-        self.scale2.grid(row=1, column=1, sticky=W)
+        self.scale2.grid(row=1, column=1, sticky=tkinter.W)
         self.scale2.bind("<ButtonRelease-1>", self.drawMargins)
         self.scale2.bind("<KeyRelease-Left>", self.drawMargins)
         self.scale2.bind("<KeyRelease-Right>", self.drawMargins)
 
-        self.scale4 = Scale(
+        self.scale4 = tkinter.Scale(
             self.parent,
             from_=0,
             to=1,
-            orient=HORIZONTAL,
+            orient=tkinter.HORIZONTAL,
             resolution=0.01,
             sliderlength=15,
             length=self.width / 2.0 + 7,
             showvalue=0,
         )
-        self.scale4.grid(row=1, column=2, sticky=E)
+        self.scale4.grid(row=1, column=2, sticky=tkinter.E)
         self.scale4.set(1.0)
         self.scale4.bind("<ButtonRelease-1>", self.drawMargins)
         self.scale4.bind("<KeyRelease-Left>", self.drawMargins)
         self.scale4.bind("<KeyRelease-Right>", self.drawMargins)
 
         ### Columns 0 contains the top and bottom margins
-        self.scale1 = Scale(
+        self.scale1 = tkinter.Scale(
             self.parent,
             from_=0,
             to=1,
-            orient=VERTICAL,
+            orient=tkinter.VERTICAL,
             resolution=0.01,
             sliderlength=15,
             length=self.height / 2.0 + 7,
             showvalue=0,
         )
-        self.scale1.grid(row=2, column=0, sticky=NW)
+        self.scale1.grid(row=2, column=0, sticky=tkinter.NW)
         self.scale1.bind("<ButtonRelease-1>", self.drawMargins)
         self.scale1.bind("<KeyRelease-Up>", self.drawMargins)
         self.scale1.bind("<KeyRelease-Down>", self.drawMargins)
 
-        self.scale3 = Scale(
+        self.scale3 = tkinter.Scale(
             self.parent,
             from_=0,
             to=1,
-            orient=VERTICAL,
+            orient=tkinter.VERTICAL,
             resolution=0.01,
             sliderlength=15,
             length=self.height / 2.0 + 7,
             showvalue=0,
         )
-        self.scale3.grid(row=3, column=0, sticky=SW)
+        self.scale3.grid(row=3, column=0, sticky=tkinter.SW)
         self.scale3.set(1.0)
         self.scale3.bind("<ButtonRelease-1>", self.drawMargins)
         self.scale3.bind("<KeyRelease-Up>", self.drawMargins)
         self.scale3.bind("<KeyRelease-Down>", self.drawMargins)
 
         ### The canvas to show the image and margin lines spans 4 grid segments
-        self.canvas1 = Canvas(self.parent, width=self.width, height=self.height)
+        self.canvas1 = tkinter.Canvas(self.parent, width=self.width, height=self.height)
         self.canvas1.grid(
-            row=2, column=1, columnspan=2, rowspan=2, sticky=NW, padx=7, pady=7
+            row=2, column=1, columnspan=2, rowspan=2, sticky=tkinter.NW, padx=7, pady=7
         )
 
         ### Draw the pdf on the canvas
@@ -225,23 +225,23 @@ class Journal2ebook:
         self.bottom = self.canvas1.create_line(0, self.height, self.width, self.height)
 
         ### Create a frame on the side for extras
-        self.fExtras = Frame(self.parent)
-        self.fExtras.grid(row=2, column=3, sticky=N + S)
+        self.fExtras = tkinter.Frame(self.parent)
+        self.fExtras.grid(row=2, column=3, sticky=tkinter.N + tkinter.S)
 
         ### Some extra options in last column
-        self.bSkipFirst = Checkbutton(
+        self.bSkipFirst = tkinter.Checkbutton(
             self.fExtras, text="Skip first page", variable=self.skipFirst
         )
-        self.bSkipFirst.grid(row=0, column=0, sticky=NW)
+        self.bSkipFirst.grid(row=0, column=0, sticky=tkinter.NW)
 
-        self.bXtracols = Checkbutton(
+        self.bXtracols = tkinter.Checkbutton(
             self.fExtras, text="3 or 4 columns", variable=self.ncols
         )
-        self.bXtracols.grid(row=1, column=0, sticky=NW)
+        self.bXtracols.grid(row=1, column=0, sticky=tkinter.NW)
 
         ### Profiles list box
-        self.lProfiles = Listbox(self.fExtras)
-        self.lProfiles.grid(row=2, column=0, sticky=SW)
+        self.lProfiles = tkinter.Listbox(self.fExtras)
+        self.lProfiles.grid(row=2, column=0, sticky=tkinter.SW)
         self.lProfiles.bind("<<ListboxSelect>>", self.chooseProfile)
 
         if "profiles" in self.configVars and self.configVars["profiles"] != "None":
@@ -252,44 +252,48 @@ class Journal2ebook:
             f.close()
 
         for i in range(len(self.profileList)):
-            self.lProfiles.insert(END, self.profileList[i][0])
+            self.lProfiles.insert(tkinter.END, self.profileList[i][0])
 
         ### Quit and save buttons on the side
-        self.fButtons = Frame(self.parent)
-        self.fButtons.grid(row=3, column=3, sticky=S)
-        self.bNewFile = Button(self.fButtons, text="new file", background="#8C99DF")
-        self.bNewFile.grid(row=0, column=0, sticky=E + W)
+        self.fButtons = tkinter.Frame(self.parent)
+        self.fButtons.grid(row=3, column=3, sticky=tkinter.S)
+        self.bNewFile = tkinter.Button(
+            self.fButtons, text="new file", background="#8C99DF"
+        )
+        self.bNewFile.grid(row=0, column=0, sticky=tkinter.E + tkinter.W)
         self.bNewFile.bind("<Button-1>", self.bNewFileClick)
         self.bNewFile.bind("<Return>", self.bNewFileClick)
 
-        self.bReady = Button(self.fButtons, text="Ready!", background="#8C99DF")
-        self.bReady.grid(row=1, column=0, sticky=E + W)
+        self.bReady = tkinter.Button(self.fButtons, text="Ready!", background="#8C99DF")
+        self.bReady.grid(row=1, column=0, sticky=tkinter.E + tkinter.W)
         self.bReady.focus_force()  # Force focus to be on button1 on start
         self.bReady.bind("<Button-1>", self.bReadyClick)
         self.bReady.bind("<Return>", self.bReadyClick)
 
-        self.bQuit = Button(self.fButtons)
+        self.bQuit = tkinter.Button(self.fButtons)
         self.bQuit.configure(text="Quit", background="#8C99DF")
-        self.bQuit.grid(row=2, column=0, sticky=E + W)
+        self.bQuit.grid(row=2, column=0, sticky=tkinter.E + tkinter.W)
         self.bQuit.bind("<Button-1>", self.bQuitClick)
         self.bQuit.bind("<Return>", self.bQuitClick)
 
         ### Page increment buttons within a frame (for centering purposes)
-        self.fPageChange = Frame(self.parent)
+        self.fPageChange = tkinter.Frame(self.parent)
         self.fPageChange.grid(row=4, column=1, columnspan=2)
 
-        self.bDec = Button(self.fPageChange)
+        self.bDec = tkinter.Button(self.fPageChange)
         self.bDec.configure(text="<", background="blue")
-        self.bDec.grid(row=0, column=0, sticky=W)
+        self.bDec.grid(row=0, column=0, sticky=tkinter.W)
         self.bDec.bind("<Button-1>", self.bDecClick)
 
-        self.pageEntry = Entry(self.fPageChange, textvariable=self.pageString, width=4)
+        self.pageEntry = tkinter.Entry(
+            self.fPageChange, textvariable=self.pageString, width=4
+        )
         self.pageEntry.grid(row=0, column=1)
         self.pageEntry.bind("<Return>", self.updateImage)
 
-        self.bInc = Button(self.fPageChange)
+        self.bInc = tkinter.Button(self.fPageChange)
         self.bInc.configure(text=">", background="blue")
-        self.bInc.grid(row=0, column=2, sticky=E)
+        self.bInc.grid(row=0, column=2, sticky=tkinter.E)
         self.bInc.bind("<Button-1>", self.bIncClick)
 
     def chooseImage(self):
@@ -443,41 +447,43 @@ class Journal2ebook:
         ):
             self.setupProfiles()
 
-        self.saveProfileDialog = Toplevel(self.parent)
-        profileNameLabel = Label(self.saveProfileDialog, text="Journal name: ")
-        profileNameText = StringVar()
-        profileNameEntry = Entry(
+        self.saveProfileDialog = tkinter.Toplevel(self.parent)
+        profileNameLabel = tkinter.Label(self.saveProfileDialog, text="Journal name: ")
+        profileNameText = tkinter.StringVar()
+        profileNameEntry = tkinter.Entry(
             self.saveProfileDialog, width=25, textvariable=profileNameText
         )
-        profileNameLabel.grid(row=0, column=0, sticky=W)
-        profileNameEntry.grid(row=1, column=0, sticky=W)
+        profileNameLabel.grid(row=0, column=0, sticky=tkinter.W)
+        profileNameEntry.grid(row=1, column=0, sticky=tkinter.W)
 
-        bOK = Button(self.saveProfileDialog)
+        bOK = tkinter.Button(self.saveProfileDialog)
         bOK.configure(text="OK")
         bOK.focus_force()
         bOK.bind("<Button-1>", lambda event: self.addProfile(profileNameText.get()))
         bOK.bind("<Return>", lambda event: self.addProfile(profileNameText.get()))
-        bOK.grid(row=1, column=0, sticky=E)
+        bOK.grid(row=1, column=0, sticky=tkinter.E)
 
-        bCancel = Button(self.saveProfileDialog)
+        bCancel = tkinter.Button(self.saveProfileDialog)
         bCancel.configure(text="Cancel")
         bCancel.bind("<Button-1>", lambda event: self.saveProfileDialog.destroy())
         bCancel.bind("<Return>", lambda event: self.saveProfileDialog.destroy())
-        bCancel.grid(row=2, column=1, sticky=W)
+        bCancel.grid(row=2, column=1, sticky=tkinter.W)
 
     def setupProfiles(self):
-        self.profileDialog = Toplevel(self.parent)
-        self.fileBoxText = StringVar()
-        msg = Message(
+        self.profileDialog = tkinter.Toplevel(self.parent)
+        self.fileBoxText = tkinter.StringVar()
+        msg = tkinter.Message(
             self.profileDialog,
             text="This is your first time accessing profiles!\n\nProfiles allow you to save settings that work well for a particular journal or set of journals. \n\nTo begin, select the file in which to save your profile parameters:",
         )
-        msg.grid(row=0, column=0, sticky=W)
-        fileBox = Entry(self.profileDialog, width=50, textvariable=self.fileBoxText)
+        msg.grid(row=0, column=0, sticky=tkinter.W)
+        fileBox = tkinter.Entry(
+            self.profileDialog, width=50, textvariable=self.fileBoxText
+        )
         self.fileBoxText.set("./journal2ebook.txt")
-        fileBox.grid(row=1, column=0, sticky=W)
+        fileBox.grid(row=1, column=0, sticky=tkinter.W)
 
-        bBrowse = Button(self.profileDialog)
+        bBrowse = tkinter.Button(self.profileDialog)
         bBrowse.configure(text="Browse")
         bBrowse.bind(
             "<Button-1>",
@@ -495,20 +501,20 @@ class Journal2ebook:
                 )
             ),
         )
-        bBrowse.grid(row=1, column=1, sticky=W)
+        bBrowse.grid(row=1, column=1, sticky=tkinter.W)
 
-        bOK = Button(self.profileDialog)
+        bOK = tkinter.Button(self.profileDialog)
         bOK.configure(text="OK")
         bOK.focus_force()
         bOK.bind("<Button-1>", self.profilesOK)
         bOK.bind("<Return>", self.profilesOK)
-        bOK.grid(row=2, column=0, sticky=E)
+        bOK.grid(row=2, column=0, sticky=tkinter.E)
 
-        bCancel = Button(self.profileDialog)
+        bCancel = tkinter.Button(self.profileDialog)
         bCancel.configure(text="Cancel")
         bCancel.bind("<Button-1>", lambda event: self.profileDialog.destroy())
         bCancel.bind("<Return>", lambda event: self.profileDialog.destroy())
-        bCancel.grid(row=2, column=1, sticky=W)
+        bCancel.grid(row=2, column=1, sticky=tkinter.W)
 
     def profilesOK(self, event):
         self.configVars["profiles"] = self.fileBoxText.get()
@@ -543,7 +549,7 @@ class Journal2ebook:
             profileStr = profileStr + "," + str(newProfile[i])
         f.write(profileStr + "\n")
         f.close()
-        self.lProfiles.insert(END, profileName)
+        self.lProfiles.insert(tkinter.END, profileName)
         self.saveProfileDialog.destroy()
 
     def editProfile(self):
@@ -660,7 +666,7 @@ if __name__ == "__main__":
     else:
         filename = None
 
-    root = Tk()
+    root = tkinter.Tk()
     root.wm_title("journal2ebook")
     myapp = Journal2ebook(root, filename)
     root.mainloop()
