@@ -3,20 +3,20 @@ try:
     import ImageTk
 except ImportError:
     from PIL import ImageTk
-import PIL.Image
-
-import sys
-import tkinter
-from tkFileDialog import askopenfilename, asksaveasfilename
-import tkMessageBox
+import glob
 import os
+import platform
 import re
+import subprocess
+import sys
 
 # import pdb
 import time
-import glob
-import subprocess
-import platform
+import tkinter
+
+import PIL.Image
+import tkMessageBox
+from tkFileDialog import askopenfilename, asksaveasfilename
 
 
 class Journal2ebook:
