@@ -25,6 +25,8 @@ Third party programs as backends:
 * k2pdfopt - to convert pdf to epub
 * ImageMagick and k2pdfopt must be in your system's search PATH (or installed in the journal2ebook directory)
 
+For any OS, ImageMagick and k2pdfopt must be in your system's search PATH (or
+installed ot the journal2ebook directory). The dependencies listed in the folloing sections must also be met.
 
 Linux / Mac Users
 -----------------
@@ -34,6 +36,11 @@ Non-standard python modules needed:
 the application
 
   You may need to obtain PIL from http://www.pythonware.com/
+
+Third party programs as backends:
+
+* imagemagick - to convert pdf to png 
+* k2pdfopt - to convert pdf to epub
 
 To install:
 
@@ -66,6 +73,12 @@ the application
 * ghostscript - to convert pdf to png
 
   (http://sourceforge.net/projects/ghostscript/)
+
+Third party programs as backends:
+
+* imagemagick - to convert pdf to png 
+* k2pdfopt - to convert pdf to epub
+
 
 
 Dependencies that seem to be included with most installations of python:
