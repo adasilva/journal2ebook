@@ -151,16 +151,16 @@ class App(ttk.Frame):
             return path
 
         init_dir = self._config["last_dir"]
-        _path: str | None = tk.filedialog.askopenfilename(
+        maybe_path: str | tuple = tk.filedialog.askopenfilename(
             parent=self, initialdir=init_dir, filetypes=[("pdf", "*.pdf")]
         )
 
-        if _path is None and self.path is not None:
-            return self.path
-        elif _path is None:
+        if isinstance(maybe_path, tuple):
+            if hasattr(self, "path"):
+                return self.path
             raise NoPdfSelectedError
 
-        path = Path(_path)
+        path = Path(maybe_path)
 
         self._config["last_dir"] = path.parent.absolute()
         return path
@@ -442,5 +442,6 @@ def main(path: Path):
     try:
         myapp = App(root, path)
     except NoPdfSelectedError:
-        return
+        msg = "No path to a pdf file was provdied. Exiting..."
+        raise SystemExit(msg)
     myapp.mainloop()
