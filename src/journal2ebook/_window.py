@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-try:
-    import ImageTk
-except ImportError:
-    from PIL import ImageTk
-
 import enum
 import subprocess
 import tkinter as tk
@@ -11,8 +5,14 @@ import tkinter.filedialog
 from pathlib import Path
 from tkinter import ttk
 from typing import Any, Optional
+
 import click
 import pdf2image
+
+try:
+    import ImageTk
+except ImportError:
+    from PIL import ImageTk
 
 from ._config import Config, Profile
 from ._exceptions import NoPdfSelectedError
