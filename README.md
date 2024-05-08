@@ -15,79 +15,17 @@ The dependencies listed in the following sections must also be met.
 
 All users
 ---------
-* Python 2.6 or higher
+* Python 3.9 or higher
 
 Third party programs as backends:
 
-* To convert pdf to png:
-  * imagemagick for linux and windows users
-  * sipe for mac users
-* k2pdfopt - to convert pdf to epub
-* ImageMagick and k2pdfopt must be in your system's search PATH (or installed in the journal2ebook directory)
-
-For any OS, ImageMagick and k2pdfopt must be in your system's search PATH (or
-installed ot the journal2ebook directory). The dependencies listed in the folloing sections must also be met.
-
-Linux / Mac Users
------------------
-Non-standard python modules needed:
-
-* Python Imaging Library / ImageTk - to show an image of your pdf in
-the application
-
-  You may need to obtain PIL from http://www.pythonware.com/
-
-Third party programs as backends:
-
-* imagemagick - to convert pdf to png
 * k2pdfopt - to convert pdf to epub
 
-To install:
+For any OS, k2pdfopt must be in your system's search PATH (or installed to the journal2ebook directory).
 
-* Download the src directory
+Installation
+------------
 
-* From within the src directory, type into the command line
-
-  sudo python setup.py install
-
-* You can now use the application by typing journal2ebook in the command line (with or without a filename argument)
-
-You can try this software without installing:
-
-* Double click on journal2ebook.py
-
-  (if it doesn't work, check that the file is executable)
-
-* Run from the terminal:
-
-  python journal2ebook.py
-
-
-Windows
--------
-* Python Imaging Library / ImageTk - to show an image of your pdf in
-the application
-
-  You may need to obtain PIL from http://www.pythonware.com/
-
-* ghostscript - to convert pdf to png
-
-  (http://sourceforge.net/projects/ghostscript/)
-
-Third party programs as backends:
-
-* imagemagick - to convert pdf to png
-* k2pdfopt - to convert pdf to epub
-
-
-
-Dependencies that seem to be included with most installations of python:
-------------------------------------------------------------------------
-
-* Tkinter - to make the GUI
-* os - to interface with the operating system
-* re - For some regex stuff
-* pdb
-* time
-* glob
-* subprocess
+1. clone git repository
+2. run `pip install .` from the root directory
+3. run `journal2ebook` to run
