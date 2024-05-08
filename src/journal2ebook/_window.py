@@ -79,7 +79,7 @@ class Scale(tk.Scale):
 
     @property
     def canvas(self):
-        return self.master.canvas
+        return self.master.canvas  # type: ignore[attr-defined]
 
     def draw(self):
         if self.position in (Position.LEFT, Position.RIGHT):
@@ -99,7 +99,7 @@ class App(ttk.Frame):
     canvas: Any
     page: tk.IntVar
     _max_pages: int
-    path: Path | None = None
+    path: Path
 
     scale_left: Scale
     scale_right: Scale
@@ -150,20 +150,21 @@ class App(ttk.Frame):
     def num_pages(self) -> int:
         return len(self._images)
 
-    def require_path(self, path: Optional[Path]) -> Path:
-        if path is None:
-            init_dir = self._config["last_dir"]
+    def require_path(self, path: Path | None) -> Path:
+        if path is not None:
+            return path
 
-            _path: str | None = tk.filedialog.askopenfilename(
-                parent=self, initialdir=init_dir, filetypes=[("pdf", "*.pdf")]
-            )
+        init_dir = self._config["last_dir"]
+        _path: str | None = tk.filedialog.askopenfilename(
+            parent=self, initialdir=init_dir, filetypes=[("pdf", "*.pdf")]
+        )
 
-            if _path is None and self.path is None:
-                raise NoPdfSelectedError
-            if _path is None:
-                return self.path
+        if _path is None and self.path is not None:
+            return self.path
+        elif _path is None:
+            raise NoPdfSelectedError
 
-            path = Path(_path)
+        path = Path(_path)
 
         self._config["last_dir"] = path.parent.absolute()
         return path
@@ -203,7 +204,7 @@ class App(ttk.Frame):
 
     def init_menu(self):
         menu = tk.Menu(self)
-        self.master.config(menu=menu)
+        self.master.config(menu=menu)  # type: ignore[attr-defined]
 
         file_menu = tk.Menu(menu)
         menu.add_cascade(label="File", menu=file_menu)
@@ -233,7 +234,7 @@ class App(ttk.Frame):
 
         entry_page = ttk.Entry(frame_page, textvariable=self.page, width=4)
         entry_page.grid(row=0, column=1)
-        entry_page.bind("<Return>", self.update())
+        entry_page.bind("<Return>", lambda _: self.update())
 
     def init_extras(self):
         extras = ttk.Frame(self)
@@ -280,7 +281,7 @@ class App(ttk.Frame):
 
     def init_profiles(self, master):
         name = tk.StringVar()
-        profiles = tk.StringVar(master, [p.name for p in self._config["profiles"]])
+        profiles = tk.Variable(master, [p.name for p in self._config["profiles"]])
 
         self.profiles = tk.Listbox(master, listvariable=profiles)
         self.profiles.grid(row=3, column=0, sticky=tk.SW)
