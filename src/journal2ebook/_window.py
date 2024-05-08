@@ -8,11 +8,7 @@ from typing import Any, Optional
 
 import click
 import pdf2image
-
-try:
-    import ImageTk
-except ImportError:
-    from PIL import ImageTk
+from PIL import ImageTk
 
 from ._config import Config, Profile
 from ._exceptions import NoPdfSelectedError
