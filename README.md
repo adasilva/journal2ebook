@@ -1,6 +1,8 @@
 journal2ebook
 =============
 
+![A screenshot of journal2ebook in action](./img/screenshot.png)
+
 Graphical application to convert academic pdfs to epub format for
 e-readers using k2pdfopt as a backend.
 
@@ -13,15 +15,12 @@ This program should work cross-platform (Linux, Mac, and Windows) though it has 
 
 The dependencies listed in the following sections must also be met.
 
-All users
----------
+Requirements
+------------
 * Python 3.9 or higher
+* `k2pdfopt` to convert pdf to epub
 
-Third party programs as backends:
-
-* k2pdfopt - to convert pdf to epub
-
-For any OS, k2pdfopt must be in your system's search PATH (or installed to the journal2ebook directory).
+`k2pdfopt` must be in your system's search PATH (or installed to the journal2ebook directory).
 
 Installation
 ------------
