@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "appdirs",
+    "click",
     "image",
     "pdf2image"
 ]
