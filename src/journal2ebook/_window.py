@@ -442,6 +442,6 @@ def main(path: Path):
     try:
         myapp = App(root, path)
     except NoPdfSelectedError:
-        msg = "No path to a pdf file was provdied. Exiting..."
+        msg = "No path to a pdf file was provided. Exiting..."
         raise SystemExit(msg)
     myapp.mainloop()
