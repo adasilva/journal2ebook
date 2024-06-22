@@ -1,26 +1,53 @@
 ci:
-    autoupdate_schedule: monthly
+  skip: [pytest]
+  autoupdate_schedule: monthly
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
     hooks:
-    -   id: check-added-large-files
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
-    -   id: check-toml
-    -   id: check-yaml
--   repo: https://github.com/pappasam/toml-sort
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+      - id: check-toml
+      - id: check-yaml
+  - repo: https://github.com/pappasam/toml-sort
     rev: v0.23.1
     hooks:
-    -   id: toml-sort-fix
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.3.5'
+      - id: toml-sort-fix
+  - repo: https://github.com/google/yamlfmt
+    rev: "v0.12.1"
     hooks:
-    -   id: ruff
-    -   id: ruff-format
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.9.0'
+      - id: yamlfmt
+  - repo: https://github.com/codespell-project/codespell
+    rev: "v2.3.0"
     hooks:
-    -   id: mypy
+      - id: codespell
+        args: []
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.4.10'
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.10.0'
+    hooks:
+      - id: mypy
         exclude: tests
+        # - repo: local
+        #   hooks:
+        #     - id: pytest
+        #       name: pytest
+        #       entry: pytest
+        #       language: python
+        #       pass_filenames: false
+        #       always_run: true
 fail_fast: false
