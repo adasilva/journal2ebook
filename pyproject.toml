@@ -4,8 +4,8 @@ requires = ["matplotlib", "setuptools"]
 
 [project]
 authors = [
-    {email = "latexplotlib.gvxel@aleeas.com", name = "Constantin Gahr"},
     {name = "Ashley DaSilva"},
+    {name = "Constantin Gahr"},
     {name = "Jason Gullifer"}
 ]
 classifiers = [
@@ -37,8 +37,60 @@ journal2ebook = "journal2ebook._window:main"
 Homepage = "https://github.com/adasilva/journal2ebook"
 Issues = "https://github.com/adasilva/journal2ebook/issues"
 
-[tool.lint.ruff]
+[tool.coverage.report]
+exclude_lines = ["if TYPE_CHECKING:"]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    ".cache",
+    ".git",
+    ".ipynb_checkpoints",
+    "__pycache__",
+    "build",
+    "dist",
+    "examples",
+    "setup*",
+    "tests"
+]
+mypy_path = "src"
+no_implicit_optional = true
+no_implicit_reexport = true
+strict = false
+strict_equality = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "matplotlib.*"
+]
+
+[tool.pytest.ini_options]
+addopts = ["--cov", "--cov-report=html", "--cov-report=term", "--strict-config", "--strict-markers", "-ra"]
+filterwarnings = ["error", "default::DeprecationWarning"]
+log_cli_level = "INFO"
+minversion = 7
+testpaths = [
+    "tests"
+]
+xfail_strict = true
+
+[tool.ruff]
 fix = true
+src = ["src"]
+
+[tool.ruff.lint]
 fixable = ["I"]
 ignore = [
     "ANN101"  # missing-type-self
@@ -82,49 +134,28 @@ select = [
     "TCH",
     "TID",
     "TRY",
-    # "D",
     "UP",
+    # "D",
     "W",
     "YTT"
 ]
-target-version = "py38"
-
-[tool.mypy]
-check_untyped_defs = true
-exclude = [
-    ".cache",
-    ".git",
-    ".ipynb_checkpoints",
-    "__pycache__",
-    "build",
-    "dist",
-    "examples",
-    "setup*",
-    "tests"
-]
-mypy_path = "src"
-no_implicit_optional = true
-no_implicit_reexport = true
-show_error_codes = true
-strict_equality = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["matplotlib.*"]
-
-[tool.pytest.ini_options]
-addopts = "--cov --cov-report=html --cov-report=term"
-testpaths = ["tests"]
 
 [tool.ruff.lint.flake8-annotations]
 suppress-dummy-args = true
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403"]
+"tests/*" = [
+    "ANN",
+    "ARG002",  # unused-method-argument
+    "INP",  # implicit-namespace-package
+    "PLR0913",  # too-many-arguments
+    "S101",  # assert
+    "SLF001"  # private-member-access
+]
+
+[tool.ruff.lint.pylint]
+max-args = 5
 
 [tool.setuptools.dynamic]
 version = {attr = "journal2ebook._version.__version__"}
@@ -143,4 +174,5 @@ spaces_indent_inline_array = 4
 
 [tool.tomlsort.overrides]
 "project.classifiers".inline_arrays = false
+"tool.pytest.ini_options.filterwarnings".inline_arrays = false
 "tool.ruff.select".inline_arrays = false
