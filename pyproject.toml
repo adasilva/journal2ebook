@@ -145,6 +145,7 @@ suppress-dummy-args = true
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403"]
+"_window.py" = ["ANN001"]
 "tests/*" = [
     "ANN",
     "ARG002",  # unused-method-argument

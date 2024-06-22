@@ -1,3 +1,4 @@
+import contextlib
 import enum
 import subprocess
 import tkinter as tk
@@ -26,8 +27,7 @@ class Position(enum.Enum):
 
 
 class Scale(tk.Scale):
-    def __init__(self, master, *, position: Position):
-        # self.master = master
+    def __init__(self, master, *, position: Position) -> None:
         self.position = position
 
         if self.position in (Position.LEFT, Position.RIGHT):
@@ -71,13 +71,11 @@ class Scale(tk.Scale):
             self.grid(row=2, column=0, sticky=tk.S)
             self.set(1.0)
 
-        # self.bind("<ButtonRelease-1>", lambda _: self.draw(self.canvas))
-
     @property
-    def canvas(self):
+    def canvas(self):  # noqa: ANN202
         return self.master.canvas  # type: ignore[attr-defined]
 
-    def draw(self):
+    def draw(self) -> None:
         if self.position in (Position.LEFT, Position.RIGHT):
             x_pos = self.get() * self.canvas.winfo_width()
             coords = (x_pos, 0, x_pos, self.canvas.winfo_height())
@@ -109,7 +107,7 @@ class App(ttk.Frame):
     width: int
     height: int
 
-    def __init__(self, master, path: Path):
+    def __init__(self, master, path: Path) -> None:
         super().__init__(master, padding=10)
 
         self._config = Config()
@@ -165,17 +163,17 @@ class App(ttk.Frame):
         self._config["last_dir"] = path.parent.absolute()
         return path
 
-    def load_pdf(self):
+    def load_pdf(self) -> None:
         self._images = pdf2image.convert_from_path(self.path)
 
-    def set_width_height(self, height=600):
+    def set_width_height(self, height: int = 600) -> None:
         img = self._images[self.page.get() - 1]
         aspect = img.size[0] / img.size[1]
 
         self.height = height
         self.width = int(height * aspect)
 
-    def draw_image(self, *args):
+    def draw_image(self, *_) -> None:
         img = self._images[self.page.get() - 1]
         img = img.resize((self.width, self.height))
 
@@ -186,7 +184,7 @@ class App(ttk.Frame):
             self.canvas.delete(_id)
         self.canvas.update()
 
-    def open_pdf(self):
+    def open_pdf(self) -> None:
         self.path = self.require_path(None)
         self.load_pdf()
         self.set_width_height()
@@ -198,7 +196,7 @@ class App(ttk.Frame):
         self.scale_top.draw()
         self.scale_bottom.draw()
 
-    def init_menu(self):
+    def init_menu(self) -> None:
         menu = tk.Menu(self)
         self.master.config(menu=menu)  # type: ignore[attr-defined]
 
@@ -214,7 +212,7 @@ class App(ttk.Frame):
         about_menu.add_command(label="About k2pdfopt")
         about_menu.add_command(label="Show config path")
 
-    def init_page_counter(self):
+    def init_page_counter(self) -> None:
         frame_page = ttk.Frame(self)
         frame_page.grid(row=3, column=1, columnspan=2)
 
@@ -232,7 +230,7 @@ class App(ttk.Frame):
         entry_page.grid(row=0, column=1)
         entry_page.bind("<Return>", lambda _: self.update())
 
-    def init_extras(self):
+    def init_extras(self) -> None:
         extras = ttk.Frame(self)
         extras.grid(row=1, column=3, rowspan=2, sticky=tk.N + tk.S)
 
@@ -275,7 +273,7 @@ class App(ttk.Frame):
         button_quit.bind("<Button-1>", lambda _: self.master.destroy())
         button_quit.bind("<Return>", lambda _: self.master.destroy())
 
-    def init_profiles(self, master):
+    def init_profiles(self, master) -> None:
         name = tk.StringVar()
         profiles = tk.Variable(master, [p.name for p in self._config["profiles"]])
 
@@ -311,7 +309,7 @@ class App(ttk.Frame):
 
         self.apply_profile(name)
 
-    def apply_profile(self, name: tk.StringVar):
+    def apply_profile(self, name: tk.StringVar) -> None:
         selection = self.profiles.curselection()
         if len(selection) == 0:
             return
@@ -337,14 +335,14 @@ class App(ttk.Frame):
 
         name.set(profile.name)
 
-    def add_new_profile(self):
+    def add_new_profile(self) -> None:
         profile = Profile("<new>")
         self.profiles.insert(tk.END, profile)
         self._config["profiles"].append(profile)
 
         self._config.save()
 
-    def delete_profile(self):
+    def delete_profile(self) -> None:
         selection = self.profiles.curselection()
         if len(selection) == 0:
             return
@@ -355,7 +353,7 @@ class App(ttk.Frame):
 
         self._config.save()
 
-    def rename_profile(self, name: tk.StringVar):
+    def rename_profile(self, name: tk.StringVar) -> None:
         _name = name.get()
         if _name == "":
             return
@@ -371,7 +369,7 @@ class App(ttk.Frame):
 
         self._config.save()
 
-    def save_profile(self):
+    def save_profile(self) -> None:
         selection = self.profiles.curselection()
         if len(selection) == 0:
             return
@@ -390,7 +388,7 @@ class App(ttk.Frame):
 
         self._config.save()
 
-    def _increase_page(self, _):
+    def _increase_page(self, _) -> None:
         self.page.set(min(self.page.get() + 1, self.num_pages))
 
         self.scale_left.draw()
@@ -398,7 +396,7 @@ class App(ttk.Frame):
         self.scale_top.draw()
         self.scale_bottom.draw()
 
-    def _decrease_page(self, _):
+    def _decrease_page(self, _) -> None:
         self.page.set(max(1, self.page.get() - 1))
 
         self.scale_left.draw()
@@ -406,8 +404,8 @@ class App(ttk.Frame):
         self.scale_top.draw()
         self.scale_bottom.draw()
 
-    def convert(self):
-        args = [
+    def convert(self) -> None:
+        args = (
             "k2pdfopt",
             "-x",
             "-c" if self.color.get() else "-c-",
@@ -427,21 +425,20 @@ class App(ttk.Frame):
             "-o",
             f"{self.path.with_stem(self.path.stem + '_output')}",
             str(self.path),
-        ]
-        try:
-            subprocess.run(args, check=True)
-        except subprocess.CalledProcessError:
-            pass
+        )
+
+        with contextlib.suppress(subprocess.CalledProcessError):
+            subprocess.run(args, check=True)  # noqa: S603
 
 
 @click.command()
 @click.argument("path", type=click.Path(exists=True, path_type=Path), required=False)
-def main(path: Path):
+def main(path: Path) -> None:
     root = tk.Tk()
     root.wm_title("journal2ebook")
     try:
         myapp = App(root, path)
-    except NoPdfSelectedError:
+    except NoPdfSelectedError as err:
         msg = "No path to a pdf file was provided. Exiting..."
-        raise SystemExit(msg)
+        raise SystemExit(msg) from err
     myapp.mainloop()
