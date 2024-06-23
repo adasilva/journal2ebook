@@ -6,6 +6,7 @@ requires = ["matplotlib", "setuptools"]
 authors = [
     {email = "latexplotlib.gvxel@aleeas.com", name = "Constantin Gahr"},
     {name = "Ashley DaSilva"},
+    {name = "Afonso Guerra"},
     {name = "Jason Gullifer"}
 ]
 classifiers = [
