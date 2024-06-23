@@ -27,7 +27,6 @@ class Position(enum.Enum):
 
 class Scale(tk.Scale):
     def __init__(self, master, *, position: Position):
-        # self.master = master
         self.position = position
 
         if self.position in (Position.LEFT, Position.RIGHT):
@@ -71,8 +70,6 @@ class Scale(tk.Scale):
             self.grid(row=2, column=0, sticky=tk.S)
             self.set(1.0)
 
-        # self.bind("<ButtonRelease-1>", lambda _: self.draw(self.canvas))
-
     @property
     def canvas(self):
         return self.master.canvas  # type: ignore[attr-defined]
@@ -86,9 +83,10 @@ class Scale(tk.Scale):
             coords = (0, y_pos, self.canvas.winfo_width(), y_pos)
 
         if self._item_id is None or self._item_id not in self.canvas.find_all():
-            self._item_id = self.canvas.create_line(*coords, tags=("scale"))
+            self._item_id = self.canvas.create_line(*coords, fill="red", tags=("scale"))
         else:
             self.canvas.coords(self._item_id, *coords)
+            self.canvas.itemconfig(self._item_id, fill="red")
 
 
 class App(ttk.Frame):
@@ -113,6 +111,10 @@ class App(ttk.Frame):
         super().__init__(master, padding=10)
 
         self._config = Config()
+
+        self.current_profile_index = self._config["last_profile"]
+        self.profile_name = tk.StringVar()
+        self.is_editing_name = False  
 
         self.path = self.require_path(path)
         self.load_pdf()
@@ -141,6 +143,7 @@ class App(ttk.Frame):
         self.many_cols = tk.BooleanVar(value=False)
         self.color = tk.BooleanVar(value=False)
         self.init_extras()
+
 
     @property
     def num_pages(self) -> int:
@@ -276,12 +279,11 @@ class App(ttk.Frame):
         button_quit.bind("<Return>", lambda _: self.master.destroy())
 
     def init_profiles(self, master):
-        name = tk.StringVar()
         profiles = tk.Variable(master, [p.name for p in self._config["profiles"]])
 
         self.profiles = tk.Listbox(master, listvariable=profiles)
         self.profiles.grid(row=3, column=0, sticky=tk.SW)
-        self.profiles.bind("<<ListboxSelect>>", lambda _: self.apply_profile(name))
+        self.profiles.bind("<<ListboxSelect>>", self.on_profile_select)
         self.profiles.selection_set(self._config["last_profile"])
         self.profiles.activate(self._config["last_profile"])
 
@@ -290,14 +292,15 @@ class App(ttk.Frame):
         button_new.bind("<Button-1>", lambda _: self.add_new_profile())
         button_new.bind("<Return>", lambda _: self.add_new_profile())
 
-        entry_rename = ttk.Entry(master, textvariable=name, width=4)
-        entry_rename.grid(row=5, column=0, sticky=tk.E + tk.W)
-        entry_rename.bind("<Return>", lambda _: self.rename_profile(name))
+        self.entry_rename = ttk.Entry(master, textvariable=self.profile_name)
+        self.entry_rename.grid(row=5, column=0, sticky=tk.E + tk.W)
+        self.entry_rename.bind("<FocusIn>", self.on_entry_focus_in)
+        self.entry_rename.bind("<FocusOut>", self.on_entry_focus_out)
 
         button_rename = ttk.Button(master, text="Rename profile")
         button_rename.grid(row=6, column=0, sticky=tk.E + tk.W)
-        button_rename.bind("<Button-1>", lambda _: self.rename_profile(name))
-        button_rename.bind("<Return>", lambda _: self.rename_profile(name))
+        button_rename.bind("<Button-1>", lambda _: self.rename_profile())
+        button_rename.bind("<Return>", lambda _: self.rename_profile())
 
         button_save = ttk.Button(master, text="Save profile")
         button_save.grid(row=7, column=0, sticky=tk.E + tk.W)
@@ -309,17 +312,75 @@ class App(ttk.Frame):
         button_delete.bind("<Button-1>", lambda _: self.delete_profile())
         button_delete.bind("<Return>", lambda _: self.delete_profile())
 
-        self.apply_profile(name)
+        self.apply_profile(self._config["last_profile"])
 
-    def apply_profile(self, name: tk.StringVar):
-        selection = self.profiles.curselection()
-        if len(selection) == 0:
+    def add_new_profile(self):
+        new_profile = Profile(f"New Profile {len(self._config['profiles']) + 1}")
+        self._config["profiles"].append(new_profile)
+        self.profiles.insert(tk.END, new_profile.name)
+        new_index = len(self._config["profiles"]) - 1
+        self.profiles.selection_clear(0, tk.END)
+        self.profiles.selection_set(new_index)
+        self.profiles.activate(new_index)
+        self.current_profile_index = new_index
+        self._config["last_profile"] = new_index
+        self.apply_profile(new_index)
+        self._config.save()
+        print(f"Added new profile: {new_profile.name}, index: {new_index}")
+
+    def delete_profile(self):
+        if self.current_profile_index is None:
+            print("No profile selected. Aborting delete.")
             return
 
-        idx = selection[0]
-        self._config["last_profile"] = idx
+        if len(self._config["profiles"]) <= 1:
+            print("Cannot delete the last remaining profile.")
+            return
 
-        profile = self._config["profiles"][idx]
+        deleted_profile = self._config["profiles"].pop(self.current_profile_index)
+        print(f"Deleted profile: {deleted_profile.name}")
+
+        # Update the listbox
+        self.profiles.delete(self.current_profile_index)
+
+        # Adjust the current_profile_index
+        if self.current_profile_index >= len(self._config["profiles"]):
+            self.current_profile_index = len(self._config["profiles"]) - 1
+
+        # Select the next available profile
+        self.profiles.selection_clear(0, tk.END)
+        self.profiles.selection_set(self.current_profile_index)
+        self.profiles.activate(self.current_profile_index)
+
+        # Apply the newly selected profile
+        self.apply_profile(self.current_profile_index)
+
+        # Update last_profile after deletion
+        self._config["last_profile"] = self.current_profile_index
+        self._config.save()
+        print(f"Profile deleted. Current index: {self.current_profile_index}")
+
+    def on_entry_focus_in(self, event):
+        self.is_editing_name = True
+
+    def on_entry_focus_out(self, event):
+        self.is_editing_name = False
+
+    def on_profile_select(self, event):
+        selection = self.profiles.curselection()
+        if selection:
+            self.current_profile_index = selection[0]
+            self._config["last_profile"] = self.current_profile_index
+            self.apply_profile(self.current_profile_index)
+            self._config.save()
+
+    def apply_profile(self, index):
+        if index is None:
+            return
+
+        self.current_profile_index = index
+        self._config["last_profile"] = index
+        profile = self._config["profiles"][index]
 
         self.skip_first_page.set(profile.skip_first_page)
         self.many_cols.set(profile.many_cols)
@@ -335,50 +396,24 @@ class App(ttk.Frame):
         self.scale_top.draw()
         self.scale_bottom.draw()
 
-        name.set(profile.name)
+        if not self.is_editing_name:
+            self.profile_name.set(profile.name)
 
-    def add_new_profile(self):
-        profile = Profile("<new>")
-        self.profiles.insert(tk.END, profile)
-        self._config["profiles"].append(profile)
-
-        self._config.save()
-
-    def delete_profile(self):
-        selection = self.profiles.curselection()
-        if len(selection) == 0:
-            return
-
-        idx = selection[0]
-        del self._config["profiles"][idx]
-        self.profiles.delete(idx)
+        print(f"Applied profile: {profile.name}")  # Debug output
+        print(f"Checkbox states: skip_first_page={profile.skip_first_page}, many_cols={profile.many_cols}, color={profile.color}")  # Debug output
 
         self._config.save()
 
-    def rename_profile(self, name: tk.StringVar):
-        _name = name.get()
-        if _name == "":
-            return
-
-        selection = self.profiles.curselection()
-        if len(selection) == 0:
-            return
-
-        idx = selection[0]
-        self._config["profiles"][idx].name = _name
-        self.profiles.delete(idx)
-        self.profiles.insert(idx, self._config["profiles"][idx])
-
-        self._config.save()
 
     def save_profile(self):
-        selection = self.profiles.curselection()
-        if len(selection) == 0:
+        if self.current_profile_index is None:
+            print("No profile selected. Aborting save.")
             return
 
-        idx = selection[0]
-        profile = self._config["profiles"][idx]
+        profile = self._config["profiles"][self.current_profile_index]
 
+        # Update profile with current UI values
+        profile.name = self.profile_name.get()
         profile.skip_first_page = self.skip_first_page.get()
         profile.many_cols = self.many_cols.get()
         profile.color = self.color.get()
@@ -388,7 +423,56 @@ class App(ttk.Frame):
         profile.topmargin = self.scale_top.get()
         profile.bottommargin = self.scale_bottom.get()
 
+        print(f"Saving profile: {profile.name}")  # Debug output
+        print(f"Checkbox states: skip_first_page={profile.skip_first_page}, many_cols={profile.many_cols}, color={profile.color}")  # Debug output
+        print(f"Margins: left={profile.leftmargin}, right={profile.rightmargin}, top={profile.topmargin}, bottom={profile.bottommargin}")  # Debug output
+
         self._config.save()
+        self.update_profiles_listbox()
+
+# Ensure the correct profile remains selected
+        self.profiles.selection_clear(0, tk.END)
+        self.profiles.selection_set(self.current_profile_index)
+        self.profiles.activate(self.current_profile_index)
+        
+        print(f"Profile saved successfully. Current index: {self.current_profile_index}")
+
+
+
+    def rename_profile(self):
+        new_name = self.profile_name.get()
+        if not new_name:
+            print("New name is empty. Aborting rename.")
+            return
+
+        if self.current_profile_index is None:
+            print("No profile selected. Aborting rename.")
+            return
+
+        old_name = self._config["profiles"][self.current_profile_index].name
+        self._config["profiles"][self.current_profile_index].name = new_name
+        self.profiles.delete(self.current_profile_index)
+        self.profiles.insert(self.current_profile_index, new_name)
+        self.profiles.selection_set(self.current_profile_index)
+
+        print(f"Renamed profile from '{old_name}' to '{new_name}'")  # Debug output
+        self._config.save()
+        self.update_profiles_listbox()
+
+
+
+    def update_profiles_listbox(self):
+        self.profiles.delete(0, tk.END)
+        for profile in self._config["profiles"]:
+            self.profiles.insert(tk.END, profile.name)
+        
+        # Ensure the current profile remains selected
+        if self.current_profile_index is not None and 0 <= self.current_profile_index < self.profiles.size():
+            self.profiles.selection_set(self.current_profile_index)
+            self.profiles.activate(self.current_profile_index)
+
+        print(f"Updated profiles listbox. Current profiles: {[p.name for p in self._config['profiles']]}")
+        print(f"Current profile index: {self.current_profile_index}")
 
     def _increase_page(self, _):
         self.page.set(min(self.page.get() + 1, self.num_pages))
