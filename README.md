@@ -38,3 +38,24 @@ Installation
 1. clone git repository
 2. run `pip install .` from the root directory
 3. run `journal2ebook` to run
+
+Development
+----------
+
+For the development of `journal2ebook`, we use `pre-commit` to lint the project and enforce a consistent code style.
+
+To get started, install the project in development mode
+```bash
+pip install -e ".[develop]"
+```
+and, afterwards, install the pre-commit hooks via
+```bash
+pre-commit install
+```
+Now, every time you try to commit a change, the pre-commit hooks run and tell you any issues the linters found.
+You can also run them manually via
+```bash
+pre-commit run --all
+```
+
+Finally, if your IDE supports lsp-servers and is configured properly, you should see all linter errors in your IDE. Happy coding!
