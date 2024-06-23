@@ -33,6 +33,15 @@ requires-python = ">=3.8"
 [project.gui-scripts]
 journal2ebook = "journal2ebook._window:main"
 
+[project.optional-dependencies]
+develop = [
+    "pre-commit",
+    "pylsp-mypy",
+    "python-lsp-server",
+    "ruff",
+    "ruff-lsp"
+]
+
 [project.urls]
 Homepage = "https://github.com/adasilva/journal2ebook"
 Issues = "https://github.com/adasilva/journal2ebook/issues"
@@ -75,6 +84,22 @@ ignore_missing_imports = true
 module = [
     "matplotlib.*"
 ]
+
+[tool.pylsp-mypy]
+enabled = true
+exclude = [
+    ".cache",
+    ".git",
+    ".ipynb_checkpoints",
+    "__pycache__",
+    "build",
+    "dist",
+    "examples",
+    "setup*",
+    "tests"
+]
+live_mode = true
+strict = false
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "--cov-report=html", "--cov-report=term", "--strict-config", "--strict-markers", "-ra"]
