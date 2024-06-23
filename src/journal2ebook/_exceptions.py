@@ -1,0 +1,2 @@
+class NoPdfSelectedError(Exception):
+    pass
