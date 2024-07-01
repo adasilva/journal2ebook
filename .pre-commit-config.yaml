@@ -42,12 +42,4 @@ repos:
     hooks:
       - id: mypy
         exclude: tests
-        # - repo: local
-        #   hooks:
-        #     - id: pytest
-        #       name: pytest
-        #       entry: pytest
-        #       language: python
-        #       pass_filenames: false
-        #       always_run: true
 fail_fast: false
