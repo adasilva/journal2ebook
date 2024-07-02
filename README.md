@@ -1,81 +1,61 @@
 journal2ebook
 =============
 
-Graphical application to convert academic pdfs to epub format for
-e-readers using k2pdfopt as a backend.
+![A screenshot of journal2ebook in action](./img/screenshot.png)
 
-The GUI allows you to visualize your PDF and draw appropriate margins
-that will be passed to k2pdfopt. The resulting pdf file is output to
-the folder of your choice. There is also functionality to save and
-recall journal profiles that store margin values.
+Graphical application to convert academic pdfs to epub format for e-readers using
+k2pdfopt as a backend.
 
-This program should work cross-platform (Linux, Mac, and Windows) though it has been most extensively tested with Linux. The Windows executable is usually behind in features, but is the most recent version that has been tested in Windows. We do not currently test on Mac.
+The GUI allows you to visualize your PDF and draw appropriate margins that will be
+passed to k2pdfopt. The resulting pdf file is output to the folder of your choice. There
+is also functionality to save and recall journal profiles that store margin values.
+
+This program should work cross-platform (Linux, Mac, and Windows) though it has
+been most extensively tested with Linux. The Windows executable is usually behind in
+features, but is the most recent version that has been tested in Windows. We do not
+currently test on Mac.
 
 The dependencies listed in the following sections must also be met.
 
-All users
----------
-* Python 2.6 or higher
+Requirements
+------------
+* Python 3.9 or higher
+* `k2pdfopt` to convert pdf to epub
+* `tkinter`
 
-Third party programs as backends:
+`k2pdfopt` must be in your system's search PATH (or installed to the journal2ebook directory).
 
-* To convert pdf to png:
-  * imagemagick for linux and windows users
-  * sipe for mac users
-* k2pdfopt - to convert pdf to epub
-* ImageMagick and k2pdfopt must be in your system's search PATH (or installed in the journal2ebook directory)
+You can check if `tkinter` is properly installed by running `python -m tkinter`. This
+command should spawn a smaller window with tkinter's version. If this is not the case,
+you might not have tkinter installed and you probably have to run something like
+```
+sudo apt install python3-tk
+```
 
+Installation
+------------
 
-Linux / Mac Users
------------------
-Non-standard python modules needed:
+1. clone git repository
+2. run `pip install .` from the root directory
+3. run `journal2ebook` to run
 
-* Python Imaging Library / ImageTk - to show an image of your pdf in
-the application
+Development
+----------
 
-  You may need to obtain PIL from http://www.pythonware.com/
+For the development of `journal2ebook`, we use `pre-commit` to lint the project and enforce a consistent code style.
 
-To install:
+To get started, install the project in development mode
+```bash
+pip install -e ".[develop]"
+```
+and, afterwards, install the pre-commit hooks via
+```bash
+pre-commit install
+```
+Now, every time you try to commit a change, the pre-commit hooks run and tell you any issues the linters found.
+You can also run them manually via
+```bash
+pre-commit run --all
+```
 
-* Download the src directory
-
-* From within the src directory, type into the command line
-
-  sudo python setup.py install
-
-* You can now use the application by typing journal2ebook in the command line (with or without a filename argument) 
-
-You can try this software without installing:
-
-* Double click on journal2ebook.py 
-
-  (if it doesn't work, check that the file is executable)
-
-* Run from the terminal: 
-
-  python journal2ebook.py
-
-
-Windows
--------
-* Python Imaging Library / ImageTk - to show an image of your pdf in
-the application
-
-  You may need to obtain PIL from http://www.pythonware.com/
-
-* ghostscript - to convert pdf to png
-
-  (http://sourceforge.net/projects/ghostscript/)
-
-
-Dependencies that seem to be included with most installations of python:
-------------------------------------------------------------------------
-
-* Tkinter - to make the GUI
-* os - to interface with the operating system
-* re - For some regex stuff
-* pdb
-* time
-* glob
-* subprocess
-  
+Finally, if your IDE supports lsp-servers and is configured properly, you should see all linter errors in your IDE. Happy coding!
